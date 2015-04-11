@@ -22,7 +22,7 @@ public class Projection_System : MonoBehaviour {
 	{
 		if(Time.time < iLastCalled + iInterval)
 		{
-			Debug.Log("Raycasting Started"+Time.time);
+			//Debug.Log("Raycasting Started"+Time.time);
 			SendRaycastArray();
 			iLastCalled = Time.time;
 		}
@@ -35,7 +35,7 @@ public class Projection_System : MonoBehaviour {
 			{
 				RaycastHit rhHit = new RaycastHit();
 				Vector3 v3Offset = new Vector3(x,y,0);
-				Vector3 vRaycast = (transform.forward*iLength)+transform.TransformVector(v3Offset);
+				Vector3 vRaycast = transform.position+(transform.forward*iLength)+transform.TransformVector(v3Offset);
 				Debug.DrawLine(transform.position,vRaycast, Color.red);
 				if(Physics.Raycast(transform.position,vRaycast,out rhHit))
 				{
