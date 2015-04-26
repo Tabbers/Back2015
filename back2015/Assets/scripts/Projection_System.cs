@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Projection_System : MonoBehaviour {
 
@@ -8,6 +9,7 @@ public class Projection_System : MonoBehaviour {
 	public Vector2 vRaycast_Grid = new Vector2(4,4); 
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
+	public List<GameObject> CollisionObjects;
 
 	public int iInterval=1;	
 	private float iLastCalled=0;
@@ -24,6 +26,7 @@ public class Projection_System : MonoBehaviour {
 		{
 			//Debug.Log("Raycasting Started"+Time.time);
 			SendRaycastArray();
+			getGameObjects();
 			iLastCalled = Time.time;
 		}
 	}
@@ -70,6 +73,36 @@ public class Projection_System : MonoBehaviour {
 		}
 		return GOs;
 		
+	}
+	void getGameObjects()
+	{ 
+		bool known = false;
+		CollisionObjects.Clear();
+		foreach(GameObject GO in goVisibleGO)
+		{
+			if(GO != null)
+			{
+				if(CollisionObjects.Count > 0)
+				{
+					foreach(GameObject GO2 in CollisionObjects)
+					{
+						if(GO.GetInstanceID() == GO2.GetInstanceID())
+						{
+							known = true;
+							break;
+						}
+					}
+					if(!known)
+					{
+						CollisionObjects.Add(GO);
+					}	
+				}
+				else
+				{
+					CollisionObjects.Add(GO);
+				}
+			}
+		}
 	}
 
 
