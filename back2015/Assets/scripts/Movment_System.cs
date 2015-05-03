@@ -5,12 +5,11 @@ using System.Collections.Generic;
 public class Movment_System : MonoBehaviour {
 
 	
-	private List<Vector3> Waypoints;
+	public List<Vector3> Waypoints;
 	public int speed = 1;
 	int Waypoint_pointer=0;
 	public float accuracy=1;
 	private bool arrived=false;
-	
 	// Use this for initialization
 	void Start () {
 		Waypoints = new List<Vector3>();
@@ -34,7 +33,13 @@ public class Movment_System : MonoBehaviour {
 	}
   	public void addWaypoint (Vector3 SingleWaypoint)
 	{
+		
 		Waypoints.Add(SingleWaypoint);
+	}
+	public void insertWaypoint (Vector3 SingleWaypoint)
+	{
+		Waypoints.Add(Waypoints[Waypoint_pointer]);
+		Waypoints.Insert(Waypoint_pointer,SingleWaypoint);
 	}
 	public void MoveToNextPoint()
 	{
