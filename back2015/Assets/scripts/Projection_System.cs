@@ -74,12 +74,44 @@ public class Projection_System : MonoBehaviour
 			}
 		}
 		return GOs;
-		
+
+	}
+	Vector3 getCorner (GameObject gObject)
+	{
+		List<Vector3> Corners;
+		Corners= new List<Vector3> ();
+		Bounds b = gObject.collider.bounds;
+		Vector3 RO = new Vector3(b.center.x + (b.extents.x/2),gObject.transform.position.y,b.center.z + (b.extents.z/2));
+		Vector3 RU = new Vector3(b.center.x + (b.extents.x/2),gObject.transform.position.y,b.center.z - (b.extents.z/2));
+		Vector3 LO = new Vector3(b.center.x - (b.extents.x/2),gObject.transform.position.y,b.center.z + (b.extents.z/2));
+		Vector3 LU = new Vector3(b.center.x - (b.extents.x/2),gObject.transform.position.y,b.center.z - (b.extents.z/2));
+
+		RO = transform.TransformPoint(RO+new Vector3(1,0,1));
+		RU = transform.TransformPoint(RO+new Vector3(1,0,-1));
+		LO = transform.TransformPoint(RO+new Vector3(-1,0,1));
+		LU = transform.TransformPoint(RO+new Vector3(-1,0,-1));
+
+		Corners.Add(RO);
+		Corners.Add(LO);
+		Corners.Add(LU);
+		Corners.Add(RU);
+
+		Vector3 Corner = new Vector3(0,transform.position.y,0);
+		foreach(Vector3 CornerInner in Corners)
+		{
+			float distance = Mathf.Infinity;		
+			
+			if (Vector3.Distance(transform.position,CornerInner) > distance)
+			{
+				Corner = CornerInner;
+				distance = Vector3.Distance(transform.position,CornerInner);
+			} 
+		}
+		return Corner;
 	}
 	void getGameObjects ()
 	{ 
 		bool known = false;
-		CollisionObjects.Clear ();
 		List<GameObject> Buffer;
 		Buffer = new List<GameObject> ();
 		foreach (GameObject GO in goVisibleGO) 
@@ -118,22 +150,9 @@ public class Projection_System : MonoBehaviour
 					break;
 				}
 			}
-			if(known)
+			if(!known)
 			{
-				BoxCollider collider = Go.GetComponent<BoxCollider>();
-				Vector3 TargetLeft = new Vector3 (collider.center.x + collider.size.x, collider.center.y, collider.center.z);
-				Vector3 Targetright = new Vector3 (collider.center.x + collider.size.y, collider.center.y, collider.center.z);
-				Vector3 Position = transform.position;
-				float distance = Mathf.Infinity;		
-
-				if (Vector3.Distance(Position,TargetLeft) > Vector3.Distance(Position,Targetright))
-				{
-					msScript.insertWaypoint (transform.TransformPoint(Targetright));
-				} 
-				else 
-				{
-					msScript.insertWaypoint(transform.TransformPoint(TargetLeft));
-				}
+				msScript.insertWaypoint(getCorner(Go));
 				CollisionObjects.Add(Go);
 			}
 		}

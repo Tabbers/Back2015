@@ -38,7 +38,6 @@ public class Movment_System : MonoBehaviour {
 	}
 	public void insertWaypoint (Vector3 SingleWaypoint)
 	{
-		Waypoints.Add(Waypoints[Waypoint_pointer]);
 		Waypoints.Insert(Waypoint_pointer,SingleWaypoint);
 	}
 	public void MoveToNextPoint()
