@@ -11,6 +11,8 @@ public class Projection_System : MonoBehaviour
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
 	public List<GameObject> CollisionObjects;
+	private float fSpacing;
+	public float fGutter;
 
 	public int iInterval = 1;	
 	private float iLastCalled = 0;
@@ -21,6 +23,8 @@ public class Projection_System : MonoBehaviour
 		goObjectsHit = new GameObject[5, 4];
 		goVisibleGO = new GameObject[goObjectsHit.Length];
 		msScript = gameObject.GetComponentInParent<Movment_System>();
+		fSpacing = gameObject.GetComponentInParent<BoxCollider>().bounds.extents.x;
+
 	}
 	
 	// Update is called once per frame
@@ -76,38 +80,58 @@ public class Projection_System : MonoBehaviour
 		return GOs;
 
 	}
-	Vector3 getCorner (GameObject gObject)
+    List<Vector3> getCorner (GameObject gObject)
 	{
 		List<Vector3> Corners;
 		Corners= new List<Vector3> ();
 		Bounds b = gObject.collider.bounds;
-		Vector3 RO = new Vector3(b.center.x + (b.extents.x/2),gObject.transform.position.y,b.center.z + (b.extents.z/2));
-		Vector3 RU = new Vector3(b.center.x + (b.extents.x/2),gObject.transform.position.y,b.center.z - (b.extents.z/2));
-		Vector3 LO = new Vector3(b.center.x - (b.extents.x/2),gObject.transform.position.y,b.center.z + (b.extents.z/2));
-		Vector3 LU = new Vector3(b.center.x - (b.extents.x/2),gObject.transform.position.y,b.center.z - (b.extents.z/2));
+		Vector3 RO = new Vector3(b.center.x + b.extents.x,b.center.y,b.center.z + b.extents.z);
+		Vector3 RU = new Vector3(b.center.x + b.extents.x,b.center.y,b.center.z - b.extents.z);
+		Vector3 LO = new Vector3(b.center.x - b.extents.x,b.center.y,b.center.z + b.extents.z);
+		Vector3 LU = new Vector3(b.center.x - b.extents.x,b.center.y,b.center.z - b.extents.z);
 
-		RO = transform.TransformPoint(RO+new Vector3(1,0,1));
-		RU = transform.TransformPoint(RO+new Vector3(1,0,-1));
-		LO = transform.TransformPoint(RO+new Vector3(-1,0,1));
-		LU = transform.TransformPoint(RO+new Vector3(-1,0,-1));
+		Debug.Log(RO);
+		Debug.Log(RU);
+		Debug.Log(LO);
+		Debug.Log(LU);
+
+		RO =(RO+new Vector3(fSpacing,0,fSpacing));
+		RU =(RU+new Vector3(fSpacing,0,-(fSpacing)));
+		LO =(LO+new Vector3(-(fSpacing),0,fSpacing));
+		LU =(LU+new Vector3(-(fSpacing),0,-(fSpacing)));
 
 		Corners.Add(RO);
 		Corners.Add(LO);
 		Corners.Add(LU);
 		Corners.Add(RU);
 
-		Vector3 Corner = new Vector3(0,transform.position.y,0);
+		List<Vector3> CornerList = new List<Vector3>();
+		Vector3 buffer= new Vector3(0,0,0);
+		float distance = Mathf.Infinity;
 		foreach(Vector3 CornerInner in Corners)
 		{
-			float distance = Mathf.Infinity;		
-			
-			if (Vector3.Distance(transform.position,CornerInner) > distance)
+			float currentdistance = Vector3.Distance(transform.position,CornerInner);
+			if (currentdistance < distance)
 			{
-				Corner = CornerInner;
-				distance = Vector3.Distance(transform.position,CornerInner);
+				buffer = CornerInner;
+				distance = currentdistance;
+			}
+		}
+		Corners.Remove(buffer);
+		CornerList.Add (buffer);
+		buffer= new Vector3(0,0,0);
+		distance = Mathf.Infinity;
+		foreach(Vector3 CornerInner in Corners)
+		{
+			float currentdistance = Vector3.Distance(CornerList[0],CornerInner);
+			if (currentdistance < distance)
+			{
+				buffer = CornerInner;
+				distance = currentdistance;
 			} 
 		}
-		return Corner;
+		CornerList.Add (buffer);
+		return CornerList;
 	}
 	void getGameObjects ()
 	{ 
@@ -152,7 +176,11 @@ public class Projection_System : MonoBehaviour
 			}
 			if(!known)
 			{
-				msScript.insertWaypoint(getCorner(Go));
+				List<Vector3> buffer = getCorner(Go);
+				foreach (Vector3 vect in buffer)
+				{
+					msScript.insertWaypoint(vect);
+				}
 				CollisionObjects.Add(Go);
 			}
 		}

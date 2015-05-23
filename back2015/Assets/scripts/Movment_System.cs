@@ -7,8 +7,8 @@ public class Movment_System : MonoBehaviour {
 	
 	public List<Vector3> Waypoints;
 	public int speed = 1;
-	int Waypoint_pointer=0;
-	public float accuracy=1;
+	public int Waypoint_pointer=0;
+	public float accuracy=0.1f;
 	private bool arrived=false;
 	// Use this for initialization
 	void Start () {

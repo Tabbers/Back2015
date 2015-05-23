@@ -2,16 +2,12 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Movment_System.cs">
     <Files>
-      <File FileName="back2015.sln" Line="1" Column="1" />
-      <File FileName="Assets\scripts\Movment_System.cs" Line="40" Column="3" />
-      <File FileName="Assets\scripts\Projection_System.cs" Line="114" Column="22" />
-      <File FileName="Assets\scripts\Display_System.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\Projection_System.cs" Line="101" Column="33" />
+      <File FileName="Assets\scripts\Movment_System.cs" Line="28" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="C:\Users\Joe\Documents\New Unity Project 1\Assets\Script\Voxel.cs" line="82" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
