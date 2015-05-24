@@ -11,7 +11,7 @@ public class Projection_System : MonoBehaviour
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
 	public List<GameObject> CollisionObjects;
-	private float fSpacing;
+	private float fSpacing = 2;
 	public float fGutter;
 
 	public int iInterval = 1;	
@@ -96,9 +96,9 @@ public class Projection_System : MonoBehaviour
 		Debug.Log(LU);
 
 		RO =(RO+new Vector3(fSpacing,0,fSpacing));
-		RU =(RU+new Vector3(fSpacing,0,-(fSpacing)));
-		LO =(LO+new Vector3(-(fSpacing),0,fSpacing));
-		LU =(LU+new Vector3(-(fSpacing),0,-(fSpacing)));
+		RU =(RU+new Vector3(fSpacing,0,-fSpacing));
+		LO =(LO+new Vector3(-fSpacing,0,fSpacing));
+		LU =(LU+new Vector3(-fSpacing,0,-fSpacing));
 
 		Corners.Add(RO);
 		Corners.Add(LO);
@@ -106,7 +106,7 @@ public class Projection_System : MonoBehaviour
 		Corners.Add(RU);
 
 		List<Vector3> CornerList = new List<Vector3>();
-		Vector3 buffer= new Vector3(0,0,0);
+		Vector3 buffer = new Vector3(0,0,0);
 		float distance = Mathf.Infinity;
 		foreach(Vector3 CornerInner in Corners)
 		{
@@ -119,7 +119,7 @@ public class Projection_System : MonoBehaviour
 		}
 		Corners.Remove(buffer);
 		CornerList.Add (buffer);
-		buffer= new Vector3(0,0,0);
+		buffer   = new Vector3(0,0,0);
 		distance = Mathf.Infinity;
 		foreach(Vector3 CornerInner in Corners)
 		{
@@ -130,7 +130,7 @@ public class Projection_System : MonoBehaviour
 				distance = currentdistance;
 			} 
 		}
-		CornerList.Add (buffer);
+		CornerList.Insert(0,buffer);
 		return CornerList;
 	}
 	void getGameObjects ()
@@ -163,6 +163,9 @@ public class Projection_System : MonoBehaviour
 				}
 			}
 		}
+		RaycastHit rhHit = new RaycastHit ();
+		Debug.DrawLine (transform.position, msScript.GetGoal(), Color.red);
+		Physics.Raycast (transform.position, msScript.GetGoal(), out rhHit);
 		bool kown = false;
 		foreach (GameObject Go in Buffer) 
 		{
@@ -174,7 +177,7 @@ public class Projection_System : MonoBehaviour
 					break;
 				}
 			}
-			if(!known)
+			if(!known && Go == rhHit.transform.gameObject && Go.name != transform.parent.name)
 			{
 				List<Vector3> buffer = getCorner(Go);
 				foreach (Vector3 vect in buffer)

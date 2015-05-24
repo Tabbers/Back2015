@@ -8,7 +8,7 @@ public class Movment_System : MonoBehaviour {
 	public List<Vector3> Waypoints;
 	public int speed = 1;
 	public int Waypoint_pointer=0;
-	public float accuracy=0.1f;
+	public float accuracy=0.5f;
 	private bool arrived=false;
 	// Use this for initialization
 	void Start () {
@@ -43,9 +43,12 @@ public class Movment_System : MonoBehaviour {
 	public void MoveToNextPoint()
 	{
 		Vector3 Targetpoint = Waypoints[Waypoint_pointer];
-
 		transform.LookAt(Targetpoint);
 		transform.position += transform.forward*speed*Time.deltaTime;
+	}
+	public Vector3 GetGoal()
+	{
+		return Waypoints[Waypoints.Count-1];
 	}
 	public bool arrivedAtWaypoint()
 	{
