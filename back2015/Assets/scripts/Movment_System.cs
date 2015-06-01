@@ -19,16 +19,21 @@ public class Movment_System : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () 
 	{
-		if(!arrived)
+		if(!arrived && Waypoints.Count != Waypoint_pointer)
 		{
 			if(!arrivedAtWaypoint())
 			{
-				MoveToNextPoint();
+				 MoveToNextPoint();
 			}
 			else{
 				if(Waypoints.Count == Waypoint_pointer) arrived = true;
 				else Waypoint_pointer ++;
 			}
+		}
+		else 
+		{
+			Debug.Log(gameObject.name+" arrived");
+			arrived = true;
 		}
 	}
   	public void addWaypoint (Vector3 SingleWaypoint)
@@ -52,6 +57,7 @@ public class Movment_System : MonoBehaviour {
 	}
 	public bool arrivedAtWaypoint()
 	{
+
 		if(transform.position.x < Waypoints[Waypoint_pointer].x+accuracy && 
 		   transform.position.x > Waypoints[Waypoint_pointer].x-accuracy &&
 		   transform.position.z < Waypoints[Waypoint_pointer].z+accuracy &&

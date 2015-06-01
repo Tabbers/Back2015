@@ -85,10 +85,10 @@ public class Projection_System : MonoBehaviour
 		List<Vector3> Corners;
 		Corners= new List<Vector3> ();
 		Bounds b = gObject.collider.bounds;
-		Vector3 RO = new Vector3(b.center.x + b.extents.x,b.center.y,b.center.z + b.extents.z);
-		Vector3 RU = new Vector3(b.center.x + b.extents.x,b.center.y,b.center.z - b.extents.z);
-		Vector3 LO = new Vector3(b.center.x - b.extents.x,b.center.y,b.center.z + b.extents.z);
-		Vector3 LU = new Vector3(b.center.x - b.extents.x,b.center.y,b.center.z - b.extents.z);
+		Vector3 RO = new Vector3(b.center.x + b.extents.x,gameObject.transform.position.y,b.center.z + b.extents.z);
+		Vector3 RU = new Vector3(b.center.x + b.extents.x,gameObject.transform.position.y,b.center.z - b.extents.z);
+		Vector3 LO = new Vector3(b.center.x - b.extents.x,gameObject.transform.position.y,b.center.z + b.extents.z);
+		Vector3 LU = new Vector3(b.center.x - b.extents.x,gameObject.transform.position.y,b.center.z - b.extents.z);
 
 		Debug.Log(RO);
 		Debug.Log(RU);
