@@ -1,10 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Projection_System.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Movment_System.cs">
     <Files>
-      <File FileName="Assets\scripts\Projection_System.cs" Line="180" Column="1" />
-      <File FileName="Assets\scripts\Movment_System.cs" Line="33" Column="8" />
-      <File FileName="Assets\Obstacle_movement.cs" Line="32" Column="15" />
+      <File FileName="Assets\scripts\Movment_System.cs" Line="133" Column="47" />
+      <File FileName="Assets\scripts\Node.cs" Line="171" Column="44" />
+      <File FileName="Assets\scripts\Projection_System.cs" Line="53" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

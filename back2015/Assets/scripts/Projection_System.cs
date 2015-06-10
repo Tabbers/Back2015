@@ -7,35 +7,35 @@ public class Projection_System : MonoBehaviour
 
 	public int iStepsize = 1;
 	public int iLength = 10;
+	public int worldSizexhalf = 50;
+	public int worldSizezhalf = 50;
 	public Vector2 vRaycast_Grid = new Vector2 (4, 4); 
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
 	public List<GameObject> CollisionObjects;
-	private float fSpacing = 2;
-	public float fGutter;
+	private float fSpacing = 1;
+	public LayerMask layers;
 
-	public int iInterval = 1;	
+	public float iInterval = 1;
+	private float timer = 1f;
 	private float iLastCalled = 0;
 	Movment_System msScript;
 	// Use this for initialization
 	void Start ()
 	{
-		goObjectsHit = new GameObject[5, 4];
+		goObjectsHit = new GameObject[5,4];
 		goVisibleGO = new GameObject[goObjectsHit.Length];
-		msScript = gameObject.GetComponentInParent<Movment_System>();
-		fSpacing = gameObject.GetComponentInParent<BoxCollider>().bounds.extents.x;
-
+		msScript = gameObject.GetComponent<Movment_System>();
 	}
 	
 	// Update is called once per frame
-	void FixedUpdate ()
+	void Update ()
 	{
-
-		if (Time.time < iLastCalled + iInterval) {
-			//Debug.Log("Raycasting Started"+Time.time);
+		timer -= Time.deltaTime;
+		if (timer <= 0) {
 			SendRaycastArray ();
 			getGameObjects ();
-			iLastCalled = Time.time;
+			timer = iInterval;
 		}
 	}
 	void SendRaycastArray ()
@@ -46,9 +46,9 @@ public class Projection_System : MonoBehaviour
 			{
 				RaycastHit rhHit = new RaycastHit ();
 				Vector3 v3Offset = new Vector3 (x, y, 0);
-				Vector3 vRaycast = transform.position + (transform.forward * iLength) + transform.TransformVector (v3Offset);
-				Debug.DrawLine (transform.position, vRaycast, Color.red);
-				if (Physics.Raycast (transform.position, vRaycast, out rhHit)) 
+				Vector3 vRaycast = transform.forward*10 + transform.TransformVector (v3Offset);
+				Debug.DrawRay(transform.position,vRaycast,Color.red);
+				if (Physics.Raycast(transform.position, vRaycast, out rhHit,iLength,layers)) 
 				{
 					goObjectsHit [x + 2, y] = rhHit.transform.gameObject;
 				} else 
@@ -80,7 +80,7 @@ public class Projection_System : MonoBehaviour
 		return GOs;
 
 	}
-    List<Vector3> getCorner (GameObject gObject)
+    void getNodes (GameObject gObject)
 	{
 		List<Vector3> Corners;
 		Corners= new List<Vector3> ();
@@ -90,14 +90,10 @@ public class Projection_System : MonoBehaviour
 		Vector3 LO = new Vector3(b.center.x - b.extents.x,gameObject.transform.position.y,b.center.z + b.extents.z);
 		Vector3 LU = new Vector3(b.center.x - b.extents.x,gameObject.transform.position.y,b.center.z - b.extents.z);
 
-		Debug.Log(RO);
-		Debug.Log(RU);
-		Debug.Log(LO);
-		Debug.Log(LU);
-
 		RO =(RO+new Vector3(fSpacing,0,fSpacing));
-		RU =(RU+new Vector3(fSpacing,0,-fSpacing));
 		LO =(LO+new Vector3(-fSpacing,0,fSpacing));
+
+		RU =(RU+new Vector3(fSpacing,0,-fSpacing));
 		LU =(LU+new Vector3(-fSpacing,0,-fSpacing));
 
 		Corners.Add(RO);
@@ -107,31 +103,57 @@ public class Projection_System : MonoBehaviour
 
 		List<Vector3> CornerList = new List<Vector3>();
 		Vector3 buffer = new Vector3(0,0,0);
-		float distance = Mathf.Infinity;
-		foreach(Vector3 CornerInner in Corners)
-		{
-			float currentdistance = Vector3.Distance(transform.position,CornerInner);
-			if (currentdistance < distance)
-			{
-				buffer = CornerInner;
-				distance = currentdistance;
-			}
-		}
+
+		buffer = GetClosetsCorner(transform.position,Corners);
 		Corners.Remove(buffer);
 		CornerList.Add (buffer);
-		buffer   = new Vector3(0,0,0);
-		distance = Mathf.Infinity;
-		foreach(Vector3 CornerInner in Corners)
-		{
-			float currentdistance = Vector3.Distance(CornerList[0],CornerInner);
-			if (currentdistance < distance)
-			{
-				buffer = CornerInner;
-				distance = currentdistance;
-			} 
-		}
+
+		buffer = GetClosetsCorner(CornerList[0],Corners);
+		Corners.Remove(buffer);
 		CornerList.Insert(0,buffer);
-		return CornerList;
+
+		Node NewNode = new Node(gObject, CornerList[1], CornerList[0]);
+
+		if(checkNode(NewNode))
+		{
+			NewNode.Setreference(gObject);
+			NewNode.Depth = msScript.currentNode.Depth;
+			if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
+			{
+				Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+			}
+			else
+			{
+				Node.attachNode(msScript.currentNode,NewNode);
+			}
+		}
+		CornerList = new List<Vector3>();
+		buffer = GetClosetsCorner(transform.position,Corners);
+		Corners.Remove(buffer);
+		CornerList.Add (buffer);
+		
+		buffer = GetClosetsCorner(CornerList[0],Corners);
+		Corners.Remove(buffer);
+		CornerList.Insert(0,buffer);
+
+		Node NewNode2 = new Node(gObject, CornerList[1], CornerList[0]);
+
+		if(checkNode(NewNode2))
+		{
+			NewNode2.Setreference(gObject);
+			NewNode2.Depth = msScript.currentNode.Depth;
+			msScript.currentNode.Depth ++;
+			if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
+			{
+				Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+			}
+			else
+			{
+				Node.attachNode(msScript.currentNode,NewNode2);
+			}
+		}
+		msScript.root.Selfevaluate(CollisionObjects,gameObject.transform.position);
+		msScript.RefreshNode();
 	}
 	void getGameObjects ()
 	{ 
@@ -164,8 +186,8 @@ public class Projection_System : MonoBehaviour
 			}
 		}
 		RaycastHit rhHit = new RaycastHit ();
-		Debug.DrawLine (transform.position, msScript.GetGoal(), Color.red);
-		Physics.Raycast (transform.position, msScript.GetGoal(), out rhHit);
+		Debug.DrawRay (transform.position, msScript.currentNode.Getpoint1() - transform.position, Color.red);
+		Physics.Raycast (transform.position, msScript.currentNode.Getpoint1() - transform.position, out rhHit);
 		bool kown = false;
 		foreach (GameObject Go in Buffer) 
 		{
@@ -177,18 +199,65 @@ public class Projection_System : MonoBehaviour
 					break;
 				}
 			}
-			if(!known && Go == rhHit.transform.gameObject && Go.name != transform.parent.name)
+			if(!known && Go == rhHit.transform.gameObject && Go.name != transform.name)
 			{
-				List<Vector3> buffer = getCorner(Go);
-				foreach (Vector3 vect in buffer)
-				{
-					msScript.insertWaypoint(vect);
-				}
 				CollisionObjects.Add(Go);
+				getNodes(Go);
 			}
 		}
 	}
-
+	private Vector3 GetClosetsCorner (Vector3 Origin, List<Vector3> Corners)
+	{
+		Vector3 buffer   = new Vector3(0,0,0);
+		float distance = Mathf.Infinity;
+		foreach(Vector3 CornerInner in Corners)
+		{
+			float currentdistance = Vector3.Distance(Origin,CornerInner);
+			if (currentdistance < distance)
+			{
+				buffer = CornerInner;
+				distance = currentdistance;
+			} 
+		}
+		return buffer;
+	}
+	private bool checkNode(Node testnode)
+	{
+		List<Vector3> testpoints = new List<Vector3>();
+		testpoints.Add(testnode.Getpoint1());
+		testpoints.Add(testnode.Getpoint2());
+		foreach(Vector3 point in testpoints)
+		{
+			if(point.x < worldSizexhalf && 
+			   point.x > -worldSizexhalf &&
+			   point.z < worldSizezhalf &&
+			   point.z > -worldSizezhalf)
+			{
+				foreach(GameObject GO in CollisionObjects)
+				{
+					Bounds b = GO.collider.bounds;
+					Vector3 RO = new Vector3(b.center.x + b.extents.x,gameObject.transform.position.y,b.center.z + b.extents.z);
+					Vector3 LU = new Vector3(b.center.x - b.extents.x,gameObject.transform.position.y,b.center.z - b.extents.z);
+					
+					if(point.x < RO.x && 
+					   point.x > LU.x &&
+					   point.z < RO.z &&
+					   point.z > LU.z)
+					{
+						return false;	
+					}
+					else{
+						return true;
+					}
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return false;
+	}
 
 
 }

@@ -118,9 +118,10 @@
      <Compile Include="Assets\AstarPathfindingProject\Utilities\ProfileHelper.cs" />
      <Compile Include="Assets\AstarPathfindingProject\Utilities\UnityReferenceHelper.cs" />
      <Compile Include="Assets\AstarPathfindingProject\changelog.cs" />
-     <Compile Include="Assets\Obstacle_movement.cs" />
-     <Compile Include="Assets\scripts\Display_System.cs" />
+     <Compile Include="Assets\scripts\AI_Spawn.cs" />
      <Compile Include="Assets\scripts\Movment_System.cs" />
+     <Compile Include="Assets\scripts\Node.cs" />
+     <Compile Include="Assets\scripts\Obstacle_movement.cs" />
      <Compile Include="Assets\scripts\Projection_System.cs" />
      <None Include="Assets\AstarPathfindingProject\Editor\EditorAssets\Materials\Navmesh2.shader" />
      <None Include="Assets\AstarPathfindingProject\Plugins\DotNetZip\License.txt" />
