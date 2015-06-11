@@ -1,46 +1,71 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+[System.Serializable]
 public class Node
 {
-	private Vector3 point1;
-	private Vector3 point2;
-	private GameObject reference;
+	public List<Vector3> Pointlist;
+	public GameObject reference;
+	public List<Node> children;
+	protected Node parent;
 
-	private List<Node> children;
-	private Node parent;
-
-	public int Depth = 0;
+	public int  Depth = 0;
 	public bool explored = false;
 	public bool isroot = false;
 	public bool istarget = false;
 
+//=========================================================================================
+// Constructor Methods ====================================================================
+//=========================================================================================
 	public Node()
 	{
 		children = new List<Node>();
 	}
+	public Node(GameObject reference)
+	{
+		children = new List<Node>();
+		Pointlist = new List<Vector3>();
+		this.reference = reference;
+	}
 	public Node(GameObject reference, Vector3 point1)
 	{
-		this.reference = reference;
-		this.point1 = point1;
 		children = new List<Node>();
+		Pointlist = new List<Vector3>();
+		this.reference = reference;
+		Pointlist.Add(point1);
 	}
 	public Node(GameObject reference, Vector3 point1, Vector3 point2)
 	{
-		this.reference = reference;
-		this.point1 = point1;
-		this.point2 = point2;
 		children = new List<Node>();
+		Pointlist = new List<Vector3>();
+		this.reference = reference;
+		Pointlist.Add(point1);
+		Pointlist.Add(point2);
+	}
+	public Node(GameObject reference, Vector3 point1, Vector3 point2, Vector3 point3)
+	{
+		children = new List<Node>();
+		Pointlist = new List<Vector3>();
+		this.reference = reference;
+		Pointlist.Add(point1);
+		Pointlist.Add(point2);
+		Pointlist.Add(point3);
 	}
 
+//=========================================================================================
+// Set Methods ============================================================================
+//=========================================================================================
 	public void Setpoint1(Vector3 point1)
 	{
-		this.point1 = point1;
+		Pointlist.Insert(0,point1);
 	}
 	public void Setpoint2(Vector3 point2)
 	{
-		this.point2 = point2;
+		Pointlist.Insert(1,point2);
+	}
+	public void Setpoint3(Vector3 point3)
+	{
+		Pointlist.Insert(2,point3);
 	}
 	public void Setreference(GameObject reference)
 	{
@@ -53,28 +78,29 @@ public class Node
 			this.children.Add(children);
 		}
 	}
-	public void Removechildren(Node children)
-	{
-		if(!istarget)
-		{
-			this.children.Remove(children);
-		}
-	}
 	public void Setparent(Node parent)
 	{
 		this.parent = parent;
 	}
+
+//=========================================================================================
+// Get Methods ============================================================================
+//=========================================================================================
 	public GameObject Getrefernce()
 	{
 		return reference;
 	}
 	public Vector3 Getpoint1()
 	{
-		return point1;
+		return Pointlist[0];
 	}
 	public Vector3 Getpoint2()
 	{
-		return point2;
+		return Pointlist[1];
+	}
+	public Vector3 Getpoint3()
+	{
+		return Pointlist[2];
 	}
 	public List<Node> Getchildren()
 	{
@@ -90,27 +116,41 @@ public class Node
 		{
 			return parent;
 		}
-		return new Node();
+		GameObject empty = new GameObject();
+		empty.name = "Empty";
+		return new Node(empty);
 	}
 	public List<Vector3> GetPoints ()
 	{
-		List<Vector3> buffer = new List<Vector3> ();
-		buffer.Add(point1);
-		buffer.Add(point2);
-
-		return buffer;
+		return Pointlist;
 	}
-	public float GetDistance(Vector3 position)
+	public Vector3 GetPoint (int index)
 	{
-		return Vector3.Distance(point1,position);
+		return Pointlist[index];
 	}
+	public float GetDistance(int index,Vector3 position)
+	{
+		return Vector3.Distance(Pointlist[index],position);
+	}
+
+//=========================================================================================
+// Remove Methods =========================================================================
+//=========================================================================================
+	public void Removechildren(Node children)
+	{
+		if(!istarget)
+		{
+			this.children.Remove(children);
+		}
+	}
+
 	public string toString()
 	{
 		string buffer = "";
 		buffer += "refernce: "+reference.name+"\n";
 		buffer += "depth: "+Depth+"\n";
-		buffer += "point 1: "+point1.ToString()+"\n";
-		buffer += "point 2: "+point2.ToString()+"\n";
+		buffer += "points: "+Pointlist.Count.ToString()+"\n";
+		buffer += "explored: "+explored.ToString()+"\n";
 		if(!isroot)	buffer += "parent: "+parent.reference.name+"\n\n";
 		if(istarget) buffer+="End of Tree \n\n";
 		return buffer;
@@ -126,10 +166,7 @@ public class Node
 	}
 	public void Selfevaluate(List<GameObject> CollisionObjects, Vector3 position)
 	{
-		List<Vector3> testpoints = new List<Vector3>();
-		testpoints.Add(point1);
-		testpoints.Add(point2);
-		foreach(Vector3 point in testpoints)
+		foreach(Vector3 point in Pointlist)
 		{
 			foreach(GameObject GO in CollisionObjects)
 			{
@@ -168,8 +205,17 @@ public class Node
 	}
 	public static bool hasChildren(Node node)
 	{
-		if(node.children.Count ==0) return false;
+		if(node.children.Count == 0) return false;
 		else return true;
+	}
+	public string childrenString()
+	{
+		string buffer="";
+		foreach (Node child in children)
+		{
+			buffer+=child.reference.name+"\n";
+		}
+		return buffer;
 	}
 
 }

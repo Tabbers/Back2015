@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public class Projection_System : MonoBehaviour
@@ -16,26 +17,33 @@ public class Projection_System : MonoBehaviour
 	private float fSpacing = 1;
 	public LayerMask layers;
 
-	public float iInterval = 1;
+	public float iInterval = 0.5f;
 	private float timer = 1f;
 	private float iLastCalled = 0;
 	Movment_System msScript;
+	Stopwatch sw;
 	// Use this for initialization
 	void Start ()
 	{
 		goObjectsHit = new GameObject[5,4];
 		goVisibleGO = new GameObject[goObjectsHit.Length];
 		msScript = gameObject.GetComponent<Movment_System>();
+		sw = new Stopwatch();	
 	}
 	
 	// Update is called once per frame
-	void Update ()
+	void FixedUpdate ()
 	{
 		timer -= Time.deltaTime;
 		if (timer <= 0) {
-			SendRaycastArray ();
-			getGameObjects ();
-			timer = iInterval;
+			sw.Start();
+				SendRaycastArray ();
+				getGameObjects ();
+				timer = iInterval;
+			sw.Stop();
+			long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+			Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
+			sw.Reset();
 		}
 	}
 	void SendRaycastArray ()
@@ -47,7 +55,7 @@ public class Projection_System : MonoBehaviour
 				RaycastHit rhHit = new RaycastHit ();
 				Vector3 v3Offset = new Vector3 (x, y, 0);
 				Vector3 vRaycast = transform.forward*10 + transform.TransformVector (v3Offset);
-				Debug.DrawRay(transform.position,vRaycast,Color.red);
+				UnityEngine.Debug.DrawRay(transform.position,vRaycast,Color.red,0.3f);
 				if (Physics.Raycast(transform.position, vRaycast, out rhHit,iLength,layers)) 
 				{
 					goObjectsHit [x + 2, y] = rhHit.transform.gameObject;
@@ -114,19 +122,6 @@ public class Projection_System : MonoBehaviour
 
 		Node NewNode = new Node(gObject, CornerList[1], CornerList[0]);
 
-		if(checkNode(NewNode))
-		{
-			NewNode.Setreference(gObject);
-			NewNode.Depth = msScript.currentNode.Depth;
-			if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
-			{
-				Node.attachNode(msScript.currentNode.Getparent(),NewNode);
-			}
-			else
-			{
-				Node.attachNode(msScript.currentNode,NewNode);
-			}
-		}
 		CornerList = new List<Vector3>();
 		buffer = GetClosetsCorner(transform.position,Corners);
 		Corners.Remove(buffer);
@@ -135,24 +130,88 @@ public class Projection_System : MonoBehaviour
 		buffer = GetClosetsCorner(CornerList[0],Corners);
 		Corners.Remove(buffer);
 		CornerList.Insert(0,buffer);
-
-		Node NewNode2 = new Node(gObject, CornerList[1], CornerList[0]);
-
-		if(checkNode(NewNode2))
+		Node NewNode2;
+		if(Vector3.Distance(CornerList[0],msScript.nTarget.Getpoint1()) < Vector3.Distance(CornerList[1],msScript.nTarget.Getpoint1()) )
 		{
+			NewNode2 = new Node(gObject, CornerList[1], CornerList[0]);
+		}
+		else
+		{
+			NewNode2 = new Node(gObject, CornerList[1], CornerList[0],RO);
+		}
+
+		if(checkNode(NewNode2) && checkNode(NewNode))
+		{
+			NewNode.Setreference(gObject);
+			NewNode.Depth = msScript.currentNode.Depth;
 			NewNode2.Setreference(gObject);
 			NewNode2.Depth = msScript.currentNode.Depth;
 			msScript.currentNode.Depth ++;
+				
 			if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
 			{
-				Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+				if(Vector3.Distance(NewNode.Getpoint1(),msScript.nTarget.Getpoint1()) > Vector3.Distance(NewNode2.Getpoint1(),msScript.nTarget.Getpoint1()))
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+				}
+				else Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
 			}
 			else
 			{
-				Node.attachNode(msScript.currentNode,NewNode2);
+				if(Vector3.Distance(NewNode.Getpoint1(),msScript.nTarget.Getpoint1()) > Vector3.Distance(NewNode2.Getpoint1(),msScript.nTarget.Getpoint1()))
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+					Node tmpNode = msScript.currentNode;
+					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
+					Node.attachNode(NewNode,tmpNode);
+				}
+				else
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+					Node tmpNode = msScript.currentNode;
+					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
+					Node.attachNode(NewNode2,tmpNode);
+				}
 			}
+
 		}
-		msScript.root.Selfevaluate(CollisionObjects,gameObject.transform.position);
+		else
+		{
+			if(checkNode(NewNode))
+			{
+				NewNode.Setreference(gObject);
+				NewNode.Depth = msScript.currentNode.Depth;
+				if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+				}
+				else
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+					Node tmpNode = msScript.currentNode;
+					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
+					Node.attachNode(NewNode,tmpNode);
+				}
+			}
+			if(checkNode(NewNode2))
+			{
+				NewNode2.Setreference(gObject);
+				NewNode2.Depth = msScript.currentNode.Depth;
+				if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+				}
+				else
+				{
+					Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+					Node tmpNode = msScript.currentNode;
+					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
+					Node.attachNode(NewNode2,tmpNode);
+				}
+			}
+
+		}
+		//msScript.root.Selfevaluate(CollisionObjects,gameObject.transform.position);
 		msScript.RefreshNode();
 	}
 	void getGameObjects ()
@@ -185,9 +244,9 @@ public class Projection_System : MonoBehaviour
 				}
 			}
 		}
-		RaycastHit rhHit = new RaycastHit ();
-		Debug.DrawRay (transform.position, msScript.currentNode.Getpoint1() - transform.position, Color.red);
-		Physics.Raycast (transform.position, msScript.currentNode.Getpoint1() - transform.position, out rhHit);
+		RaycastHit rhHit2 = new RaycastHit ();
+		UnityEngine.Debug.DrawRay (transform.position, msScript.mTarget - transform.position, Color.red,0.3f);
+		Physics.Raycast (transform.position, msScript.mTarget - transform.position, out rhHit2,	Vector3.Distance(msScript.mTarget,transform.position));
 		bool kown = false;
 		foreach (GameObject Go in Buffer) 
 		{
@@ -199,10 +258,13 @@ public class Projection_System : MonoBehaviour
 					break;
 				}
 			}
-			if(!known && Go == rhHit.transform.gameObject && Go.name != transform.name)
+			if(rhHit2.transform !=null)
 			{
-				CollisionObjects.Add(Go);
-				getNodes(Go);
+				if(!known && Go == rhHit2.transform.gameObject && Go.name != transform.name)
+				{
+					CollisionObjects.Add(Go);
+					getNodes(Go);
+				}
 			}
 		}
 	}

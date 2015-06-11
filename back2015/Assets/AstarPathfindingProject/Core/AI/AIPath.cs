@@ -1,6 +1,7 @@
 //#define ASTARDEBUG
 using UnityEngine;
 using System.Collections;
+using System.Diagnostics;
 using System.Collections.Generic;
 using Pathfinding;
 using Pathfinding.RVO;
@@ -36,7 +37,9 @@ using Pathfinding.RVO;
 [RequireComponent(typeof(Seeker))]
 [AddComponentMenu("Pathfinding/AI/AIPath (generic)")]
 public class AIPath : MonoBehaviour {
-	
+
+	Stopwatch sw;
+
 	/** Determines how often it will search for new paths. 
 	 * If you have fast moving targets or AIs, you might want to set it to a lower value.
 	 * The value is in seconds between path requests.
@@ -169,6 +172,7 @@ public class AIPath : MonoBehaviour {
 	 */
 	protected virtual void Start () {
 		startHasRun = true;
+		sw = new Stopwatch();
 		OnEnable ();
 	}
 	
@@ -209,8 +213,13 @@ public class AIPath : MonoBehaviour {
 	  */
 	protected IEnumerator RepeatTrySearchPath () {
 		while (true) {
-			float v = TrySearchPath ();
-			yield return new WaitForSeconds (v);
+			sw.Start();
+				float v = TrySearchPath ();
+				yield return new WaitForSeconds (v);
+			sw.Stop();
+			long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+			Timestamp.SavetoFile("AStar_Pathing.csv",microseconds);
+			sw.Reset();
 		}
 	}
 	
