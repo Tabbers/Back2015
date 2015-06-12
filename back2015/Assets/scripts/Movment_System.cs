@@ -5,14 +5,15 @@ using System.Collections.Generic;
 
 public class Movment_System : MonoBehaviour {
 
-	public 	int 		speed = 1;
-	public 	float 		accuracy=0.5f;
-	private int 		pointnumber = 0;
+	public 	int 		speed       = 1;
+	public 	float 		accuracy    =0.5f;
+	public int 		pointnumber = 0;
+	public int			cornercount = 0; 
 	private bool 		arrived=false;
 	public  bool 		backtracing = false;
 	public  Vector3 	mTarget;
-	private float timeout = 0;
-	private float timer   = 0;
+	private float timeout  = 0;
+	private float timer    = 0;
 	public  float Interval = 0.5f;
 	private float timer2   = 0;
 	public 	GameObject 	target;
@@ -20,9 +21,11 @@ public class Movment_System : MonoBehaviour {
 	public 	Node 		nTarget;
 	public 	Node 		currentNode;
 	public  List<Node>  Pathtaken;
+	Projection_System   psScript;
 	// Use this for initialization
 	Stopwatch sw;
 	void Start () {
+		psScript = GetComponent<Projection_System>();
 		sw = new Stopwatch();
 		Pathtaken = new List<Node>();
 		root = new Node(GameObject.FindGameObjectWithTag("Start"),transform.position);
@@ -56,13 +59,13 @@ public class Movment_System : MonoBehaviour {
 		Node subtarget;
 		if(Node.hasChildren(currentNode))
 		{
-			children = currentNode.Getchildren();
+			children = root.Getchildren();
 			subtarget = SearchTree(children);
 			if(subtarget != nTarget)
 			{
-				Node reftarget = removeTarget(children);
-				Node.removeNode(reftarget.Getparent(),reftarget);
+				if(nTarget.Getparent() != null) Node.removeNode(nTarget.Getparent(),nTarget);
 				Node.attachNode(subtarget,nTarget);
+
 			}
 			currentNode = subtarget;
 			mTarget = currentNode.Getpoint1();
@@ -76,8 +79,7 @@ public class Movment_System : MonoBehaviour {
 			subtarget = SearchTree(children);
 			if(subtarget != nTarget)
 			{
-				Node reftarget = removeTarget(children);
-				Node.removeNode(reftarget.Getparent(),reftarget);
+				if(nTarget.Getparent() != null) Node.removeNode(nTarget.Getparent(),nTarget);
 				Node.attachNode(subtarget,nTarget);
 			}
 			currentNode = subtarget;
@@ -91,17 +93,49 @@ public class Movment_System : MonoBehaviour {
 	}
 	public void RefreshNode()
 	{
-		Node previous = currentNode;
-		List<Node> children = root.Getchildren();
-		Node reftarget = removeTarget(children);
-		Node.removeNode(reftarget.Getparent(),reftarget);
-		Node subtarget = SearchTree(children);
-		Node.attachNode(subtarget,nTarget);
+		cornercount ++;
+		List<Vector3> Corners = new List<Vector3>();
+		for(int i = 0; i< currentNode.GetPoints().Count; i++)
+		{
+			Corners.Add(currentNode.GetPoint(i));
+		}
+		if(nTarget.Getparent() != null) Node.removeNode(nTarget.Getparent(),nTarget);
+		if(currentNode != nTarget) Node.Selfevaluate(psScript.CollisionObjects, transform.position,currentNode);
+		Node subtarget = SearchTree(root.Getchildren());
+
+		RaycastHit rhHit = new RaycastHit ();
+		UnityEngine.Debug.DrawRay (transform.position, subtarget.Getpoint1() - transform.position, Color.red,0.3f);
+		if(Physics.Raycast (transform.position, subtarget.Getpoint1() - transform.position, out rhHit,	Vector3.Distance(subtarget.Getpoint1(),transform.position)))
+		{
+			bool reset = true;
+			Node sibling = new Node();
+			foreach(GameObject GO in psScript.CollisionObjects)
+			{
+				if(GO == rhHit.transform.gameObject) 
+				{
+					sibling  = Node.getSibling(subtarget);
+					Node.removeNode(subtarget.Getparent(),subtarget);
+					subtarget = sibling;
+					reset = false;
+				}
+
+			}
+			if(!reset) sibling.AddPoints(Corners);
+			else cornercount = 0;
+		}
+
+		if(currentNode != nTarget && currentNode != null)
+		{
+			Node subtarget2 = SearchTree(currentNode.Getchildren());
+			if(subtarget2 == root) Node.attachNode(currentNode,nTarget);
+			else Node.attachNode(subtarget2,nTarget);
+		}
+		else Node.attachNode(subtarget,nTarget);
 		currentNode = subtarget;
 		if(currentNode.reference != nTarget.reference) Pathtaken.Add(currentNode);
 		mTarget = currentNode.Getpoint1();
 		pointnumber = 0;
-		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
 		timer = timeout;
 		UnityEngine.Debug.Log("Refresh Current: "+currentNode.toString());
 		UnityEngine.Debug.Log("Refresh Tree after: "+root.getTree());
@@ -114,9 +148,9 @@ public class Movment_System : MonoBehaviour {
 			{
 				if(arrivedAtWaypoint()){
 					pointnumber++;
-					if(pointnumber != currentNode.GetPoints().Count){ 
+					if(pointnumber < currentNode.GetPoints().Count){ 
 						mTarget = currentNode.GetPoint(pointnumber);
-						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
 						timer = timeout;
 					}
 				}
@@ -134,15 +168,30 @@ public class Movment_System : MonoBehaviour {
 			{
 				sw.Start();
 				timer -= Time.deltaTime;
-				if(timer <= 0)
+				if(timer <= 0 && currentNode.reference != nTarget.reference )
 				{
-					UnityEngine.Debug.Log("Target unreachable in Time!");
-					if(currentNode.reference != nTarget.reference ) currentNode.explored = true;
-					mTarget = currentNode.GetPoint(currentNode.GetPoints().Count-1);
-					pointnumber = currentNode.GetPoints().Count-1;
-					backtracing = true;
-					timer2 = Interval;
-					
+					Node sibling = Node.getSibling(currentNode);
+					if( sibling != new Node() && !sibling.explored)
+					{
+						UnityEngine.Debug.Log("Target unreachable in Time!");
+						currentNode.explored = true;
+						currentNode = currentNode.Getparent();
+						mTarget = currentNode.GetPoint(currentNode.GetPoints().Count-1);
+						pointnumber = currentNode.GetPoints().Count-1;
+						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+						timer = timeout;
+						backtracing = true;
+					}
+					else
+					{
+						currentNode.explored = true;
+						foreach(Node child in currentNode.Getchildren())
+						{
+							Node.removeNode(currentNode,child);
+							Node.attachNode(sibling,child);
+						}
+						NextNode();
+					}
 				}
 				sw.Stop();
 				long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
@@ -156,6 +205,8 @@ public class Movment_System : MonoBehaviour {
 				if(arrivedAtWaypoint()){
 					pointnumber--;
 					mTarget = currentNode.GetPoint(pointnumber);
+					timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+					timer = timeout;
 				}
 				else{
 					MoveToPoint();
@@ -163,38 +214,25 @@ public class Movment_System : MonoBehaviour {
 			}
 			else
 			{
-				if(newBranchAvailable())
+				if(currentNode != root) currentNode = currentNode.Getparent();
+				pointnumber = currentNode.GetPoints().Count-1;
+				mTarget     = currentNode.GetPoint(currentNode.GetPoints().Count-1);
+				timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+				timer = timeout;
+			}
+			timer2 -= Time.deltaTime;
+			if(timer2<=0) 
+			{
+				sw.Start();
+				timer -= Time.deltaTime;
+				if(timer <= 0)
 				{
-					bool allexplored = true;
-					foreach(Node child in currentNode.children)
-					{
-						if(child.explored == false)
-						{
-							allexplored = false;
-							currentNode = child;
-							mTarget = currentNode.Getpoint1();
-							pointnumber = 0;
-							timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
-							timer = timeout;
-							break;
-						}
-					}
-					if(allexplored)
-					{
-						List<Node> children = root.Getchildren();
-						Node reftarget = removeTarget(children);
-						Node.removeNode(reftarget.Getparent(),reftarget);
-						currentNode.Addchildren(nTarget);
-						NextNode();
-					}
-					backtracing = false;
+					
 				}
-				else{
-					if(currentNode.reference != nTarget.reference )currentNode.explored =true;
-					currentNode = currentNode.Getparent();
-					mTarget = currentNode.GetPoint(currentNode.GetPoints().Count-1);
-					pointnumber = currentNode.GetPoints().Count-1; 
-				}
+				sw.Stop();
+				long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+				Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
+				sw.Reset();
 			}
 		}
 
@@ -216,25 +254,6 @@ public class Movment_System : MonoBehaviour {
 		else 
 		return false;
 	}
-	private Node removeTarget(List<Node> nodes)
-	{
-		Node subtarget = new Node();
-		foreach(Node Child in nodes)
-		{
-			if (Node.hasChildren(Child))
-			{
-				subtarget = removeTarget(Child.Getchildren());
-			}
-			else
-			{
-				if(Child.reference == nTarget.reference)
-				{
-					subtarget = Child;
-				}
-			}
-		}
-		return subtarget;
-	}
 	private Node SearchTree(List<Node> nodes)
 	{
 		float fdistance = Mathf.Infinity;
@@ -244,10 +263,16 @@ public class Movment_System : MonoBehaviour {
 			if (Node.hasChildren(Child))
 			{	
 				if(Child.explored)subtarget = SearchTree(Child.Getchildren());
-				else subtarget = Child;
+				else
+				{
+					if(Child.GetDistance(0,transform.position) < subtarget.GetDistance(0,transform.position))
+					{
+						subtarget = Child;
+					}
+				}
 			}
 			else{
-				if(!Child.explored && Child.GetDistance(0,transform.position) < fdistance)
+				if(!Child.explored && Child.GetDistance(0,transform.position) < fdistance && subtarget == root )
 				{
 					fdistance = Child.GetDistance(0,transform.position);
 					subtarget = Child;
@@ -265,7 +290,10 @@ public class Movment_System : MonoBehaviour {
 		return false;
 	}
 	public void OnDrawGizmos() {
-		Gizmos.color = Color.yellow;
-		Gizmos.DrawSphere(currentNode.Getpoint1(), 1);
+		if(currentNode != null)
+		{
+			Gizmos.color = Color.yellow;
+			Gizmos.DrawSphere(mTarget, 1);
+		}
 	}
 }

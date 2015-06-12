@@ -71,13 +71,6 @@ public class Node
 	{
 		this.reference = reference;
 	}
-	public void Addchildren(Node children)
-	{
-		if(!istarget)
-		{
-			this.children.Add(children);
-		}
-	}
 	public void Setparent(Node parent)
 	{
 		this.parent = parent;
@@ -143,6 +136,23 @@ public class Node
 			this.children.Remove(children);
 		}
 	}
+//=========================================================================================
+// Add Methods =========================================================================
+//=========================================================================================
+	public void Addchildren(Node children)
+	{
+		if(!istarget)
+		{
+			this.children.Add(children);
+		}
+	}
+	public void AddPoints(List<Vector3> points)
+	{
+		foreach(Vector3 point in points)
+		{
+			this.Pointlist.Add(point);
+		}
+	}
 
 	public string toString()
 	{
@@ -164,28 +174,26 @@ public class Node
 		}
 		return buffer;
 	}
-	public void Selfevaluate(List<GameObject> CollisionObjects, Vector3 position)
+	public static void Selfevaluate(List<GameObject> CollisionObjects,Vector3 position,Node node)
 	{
-		foreach(Vector3 point in Pointlist)
+		foreach(Vector3 point in node.GetPoints())
 		{
 			foreach(GameObject GO in CollisionObjects)
 			{
 				Bounds b = GO.collider.bounds;
-				Vector3 RO = new Vector3(b.center.x + b.extents.x,position.y,b.center.z + b.extents.z);
-				Vector3 LU = new Vector3(b.center.x - b.extents.x,position.y,b.center.z - b.extents.z);
+				Vector3 RO = new Vector3(b.center.x + b.extents.x+0.3f,position.y,b.center.z + b.extents.z+0.3f);
+				Vector3 LU = new Vector3(b.center.x - b.extents.x-0.3f,position.y,b.center.z - b.extents.z-0.3f);
 				
 				if(point.x < RO.x && 
 				   point.x > LU.x &&
 				   point.z < RO.z &&
 				   point.z > LU.z)
 				{
-					removeNode(parent,this);
+					Node.removeNode(node.Getparent(),node);
+					break;
 				}
 			}
-		}
-		foreach (Node child in children)
-		{
-			child.Selfevaluate(CollisionObjects,position);
+			break;
 		}
 	}
 	public static void attachNode(Node Parent, Node Child)
@@ -195,8 +203,12 @@ public class Node
 	}
 	public static void removeNode(Node Parent,Node Child)
 	{
-		Child.Setparent(null);
-		Parent.Getchildren().Remove(Child);
+		if(Node.hasChildren(Parent))
+		{
+			Parent.Getchildren().Remove(Child);
+			Child.Setparent(null);
+		}
+
 	}
 	public static void moveNode(Node ParentOld, Node ParentNew, Node Child)
 	{
@@ -207,6 +219,20 @@ public class Node
 	{
 		if(node.children.Count == 0) return false;
 		else return true;
+	}
+	public static Node getSibling(Node node)
+	{
+		Node buffer = new Node();
+		List<Node> children = node.Getparent().Getchildren();
+		foreach (Node child in children)
+		{
+			if(child!= node && child.reference == node.reference)
+			{
+				buffer = child;
+				break;
+			}
+		}
+		return buffer;
 	}
 	public string childrenString()
 	{

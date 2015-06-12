@@ -130,15 +130,12 @@ public class Projection_System : MonoBehaviour
 		buffer = GetClosetsCorner(CornerList[0],Corners);
 		Corners.Remove(buffer);
 		CornerList.Insert(0,buffer);
-		Node NewNode2;
-		if(Vector3.Distance(CornerList[0],msScript.nTarget.Getpoint1()) < Vector3.Distance(CornerList[1],msScript.nTarget.Getpoint1()) )
+		Node NewNode2 = new Node(gObject, CornerList[1], CornerList[0]);
+		/*if(Vector3.Distance(CornerList[0],msScript.nTarget.Getpoint1()) < Vector3.Distance(CornerList[1],msScript.nTarget.Getpoint1()) )
 		{
 			NewNode2 = new Node(gObject, CornerList[1], CornerList[0]);
 		}
-		else
-		{
-			NewNode2 = new Node(gObject, CornerList[1], CornerList[0],RO);
-		}
+		else NewNode2 = new Node(gObject, CornerList[1], CornerList[0],LO);*/
 
 		if(checkNode(NewNode2) && checkNode(NewNode))
 		{
@@ -150,28 +147,24 @@ public class Projection_System : MonoBehaviour
 				
 			if(msScript.currentNode.Getrefernce() == msScript.nTarget.Getrefernce())
 			{
-				if(Vector3.Distance(NewNode.Getpoint1(),msScript.nTarget.Getpoint1()) > Vector3.Distance(NewNode2.Getpoint1(),msScript.nTarget.Getpoint1()))
+				/*if(Vector3.Distance(NewNode.Getpoint1(),msScript.nTarget.Getpoint1()) > Vector3.Distance(NewNode2.Getpoint1(),msScript.nTarget.Getpoint1()))
 				{
 					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
 				}
-				else Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+				else Node.attachNode(msScript.currentNode.Getparent(),NewNode2);*/
+				Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+				Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
 			}
 			else
 			{
+				Node.attachNode(msScript.currentNode.Getparent(),NewNode);
+				Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
+				Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
 				if(Vector3.Distance(NewNode.Getpoint1(),msScript.nTarget.Getpoint1()) > Vector3.Distance(NewNode2.Getpoint1(),msScript.nTarget.Getpoint1()))
 				{
-					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
-					Node tmpNode = msScript.currentNode;
-					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
-					Node.attachNode(NewNode,tmpNode);
+					Node.attachNode(NewNode,msScript.currentNode);
 				}
-				else
-				{
-					Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
-					Node tmpNode = msScript.currentNode;
-					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
-					Node.attachNode(NewNode2,tmpNode);
-				}
+				else Node.attachNode(NewNode2,msScript.currentNode);
 			}
 
 		}
@@ -188,9 +181,8 @@ public class Projection_System : MonoBehaviour
 				else
 				{
 					Node.attachNode(msScript.currentNode.Getparent(),NewNode);
-					Node tmpNode = msScript.currentNode;
 					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
-					Node.attachNode(NewNode,tmpNode);
+					Node.attachNode(NewNode,msScript.currentNode);
 				}
 			}
 			if(checkNode(NewNode2))
@@ -204,14 +196,12 @@ public class Projection_System : MonoBehaviour
 				else
 				{
 					Node.attachNode(msScript.currentNode.Getparent(),NewNode2);
-					Node tmpNode = msScript.currentNode;
 					Node.removeNode(msScript.currentNode.Getparent(),msScript.currentNode);
-					Node.attachNode(NewNode2,tmpNode);
+					Node.attachNode(NewNode2,msScript.currentNode);
 				}
 			}
 
 		}
-		//msScript.root.Selfevaluate(CollisionObjects,gameObject.transform.position);
 		msScript.RefreshNode();
 	}
 	void getGameObjects ()

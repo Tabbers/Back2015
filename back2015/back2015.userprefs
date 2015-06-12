@@ -1,14 +1,18 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Projection_System.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Movment_System.cs">
     <Files>
-      <File FileName="Assets\scripts\Movment_System.cs" Line="88" Column="4" />
-      <File FileName="Assets\scripts\Node.cs" Line="95" Column="1" />
-      <File FileName="Assets\scripts\Projection_System.cs" Line="263" Column="4" />
+      <File FileName="Assets\scripts\Movment_System.cs" Line="220" Column="27" />
+      <File FileName="Assets\scripts\Projection_System.cs" Line="186" Column="6" />
+      <File FileName="Assets\scripts\Node.cs" Line="187" Column="26" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches>
+    <Watch file="Assets\scripts\Movment_System.cs" line="97" offsetX="614" offsetY="1536" expression="currentNode" liveUpdate="False" />
+    <Watch file="Assets\scripts\Movment_System.cs" line="104" offsetX="958" offsetY="1648" expression="currentNode" liveUpdate="False" />
+    <Watch file="Assets\scripts\Node.cs" line="177" offsetX="846" offsetY="2656" expression="node" liveUpdate="False" />
+  </MonoDevelop.Ide.DebuggingService.PinnedWatches>
 </Properties>
