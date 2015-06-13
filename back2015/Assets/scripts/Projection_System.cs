@@ -14,6 +14,9 @@ public class Projection_System : MonoBehaviour
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
 	public List<GameObject> CollisionObjects;
+	public List<GameObject> Static;
+	public List<GameObject> Dynamic;
+	public List<GameObject> Eval;
 	private float fSpacing = 1;
 	public LayerMask layers;
 

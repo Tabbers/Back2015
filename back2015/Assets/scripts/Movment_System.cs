@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 
 public class Movment_System : MonoBehaviour {
-
+	
 	public 	int 		speed       = 1;
 	public 	float 		accuracy    =0.5f;
 	public int 		pointnumber = 0;
@@ -52,20 +52,18 @@ public class Movment_System : MonoBehaviour {
 	{
 		MoveToNode();
 	}
-  	public void NextNode ()
+	public void NextNode ()
 	{
-		Node previous = currentNode;
 		List<Node> children;
 		Node subtarget;
 		if(Node.hasChildren(currentNode))
 		{
-			children = root.Getchildren();
+			children = currentNode.Getchildren();
 			subtarget = SearchTree(children);
 			if(subtarget != nTarget)
 			{
 				if(nTarget.Getparent() != null) Node.removeNode(nTarget.Getparent(),nTarget);
-				Node.attachNode(subtarget,nTarget);
-
+				Node.attachNode(subtarget,nTarget);	
 			}
 			currentNode = subtarget;
 			mTarget = currentNode.Getpoint1();
@@ -88,8 +86,7 @@ public class Movment_System : MonoBehaviour {
 			timer = timeout;
 			pointnumber = 0;
 		}
-		UnityEngine.Debug.Log("Next Current: "+currentNode.toString());
-		UnityEngine.Debug.Log("Next Tree: "+root.getTree());
+		UnityEngine.Debug.Log("Next");
 	}
 	public void RefreshNode()
 	{
@@ -102,7 +99,7 @@ public class Movment_System : MonoBehaviour {
 		if(nTarget.Getparent() != null) Node.removeNode(nTarget.Getparent(),nTarget);
 		if(currentNode != nTarget) Node.Selfevaluate(psScript.CollisionObjects, transform.position,currentNode);
 		Node subtarget = SearchTree(root.Getchildren());
-
+		
 		RaycastHit rhHit = new RaycastHit ();
 		UnityEngine.Debug.DrawRay (transform.position, subtarget.Getpoint1() - transform.position, Color.red,0.3f);
 		if(Physics.Raycast (transform.position, subtarget.Getpoint1() - transform.position, out rhHit,	Vector3.Distance(subtarget.Getpoint1(),transform.position)))
@@ -118,27 +115,27 @@ public class Movment_System : MonoBehaviour {
 					subtarget = sibling;
 					reset = false;
 				}
-
 			}
 			if(!reset) sibling.AddPoints(Corners);
 			else cornercount = 0;
 		}
-
+		
 		if(currentNode != nTarget && currentNode != null)
 		{
 			Node subtarget2 = SearchTree(currentNode.Getchildren());
-			if(subtarget2 == root) Node.attachNode(currentNode,nTarget);
+			if(subtarget2 == root) Node.attachNode(subtarget,nTarget);
 			else Node.attachNode(subtarget2,nTarget);
 		}
-		else Node.attachNode(subtarget,nTarget);
+		else{
+			Node.attachNode(subtarget,nTarget);
+		}
 		currentNode = subtarget;
 		if(currentNode.reference != nTarget.reference) Pathtaken.Add(currentNode);
 		mTarget = currentNode.Getpoint1();
 		pointnumber = 0;
 		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
 		timer = timeout;
-		UnityEngine.Debug.Log("Refresh Current: "+currentNode.toString());
-		UnityEngine.Debug.Log("Refresh Tree after: "+root.getTree());
+		UnityEngine.Debug.Log("Refresh");
 	}
 	public void MoveToNode()
 	{
@@ -235,8 +232,8 @@ public class Movment_System : MonoBehaviour {
 				sw.Reset();
 			}
 		}
-
-
+		
+		
 	}
 	public void MoveToPoint()
 	{
@@ -245,14 +242,14 @@ public class Movment_System : MonoBehaviour {
 	}
 	public bool arrivedAtWaypoint()
 	{
-
+		
 		if(transform.position.x < mTarget.x+accuracy && 
 		   transform.position.x > mTarget.x-accuracy &&
 		   transform.position.z < mTarget.z+accuracy &&
 		   transform.position.z > mTarget.z-accuracy) 
-		return true;
+			return true;
 		else 
-		return false;
+			return false;
 	}
 	private Node SearchTree(List<Node> nodes)
 	{
