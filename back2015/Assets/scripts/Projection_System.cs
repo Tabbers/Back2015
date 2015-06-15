@@ -14,9 +14,9 @@ public class Projection_System : MonoBehaviour
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
 	public List<GameObject> CollisionObjects;
-	public List<GameObject> Static;
 	public List<GameObject> Dynamic;
 	public List<GameObject> Eval;
+	public List<Vector3> 	LastPosition;
 	private float fSpacing = 1;
 	public LayerMask layers;
 
@@ -28,6 +28,10 @@ public class Projection_System : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
+		CollisionObjects = new List<GameObject>();
+		Dynamic = new List<GameObject>();
+		Eval = new List<GameObject>();
+		LastPosition = new List<Vector3>();
 		goObjectsHit = new GameObject[5,4];
 		goVisibleGO = new GameObject[goObjectsHit.Length];
 		msScript = gameObject.GetComponent<Movment_System>();
@@ -37,17 +41,21 @@ public class Projection_System : MonoBehaviour
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
-		timer -= Time.deltaTime;
-		if (timer <= 0) {
-			sw.Start();
-				SendRaycastArray ();
-				getGameObjects ();
-				timer = iInterval;
-			sw.Stop();
-			long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
-			Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
-			sw.Reset();
-		}
+		sw.Start();
+			getDynamicGameObjects();
+			recalculateNodePositions();
+			timer -= Time.deltaTime;
+			if (timer <= 0) {	
+
+
+					SendRaycastArray ();
+					getGameObjects ();
+					timer = iInterval;
+			}
+		sw.Stop();
+		long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+		Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
+		sw.Reset();
 	}
 	void SendRaycastArray ()
 	{
@@ -255,7 +263,10 @@ public class Projection_System : MonoBehaviour
 			{
 				if(!known && Go == rhHit2.transform.gameObject && Go.name != transform.name)
 				{
+
 					CollisionObjects.Add(Go);
+					Eval.Add(Go);
+					LastPosition.Add (Go.transform.position);
 					getNodes(Go);
 				}
 			}
@@ -312,6 +323,72 @@ public class Projection_System : MonoBehaviour
 			}
 		}
 		return false;
+	}
+	private void getDynamicGameObjects()
+	{
+		List<GameObject> toRemove = new List<GameObject>();
+		List<int> index = new List<int>();
+		int i=0;
+		if(Eval.Count > 0)
+		{
+
+			foreach(GameObject GOE in Eval)
+			{
+				if(GOE.transform.position != LastPosition[i])
+				{
+					Dynamic.Add(GOE);
+				}
+				else{
+					LastPosition.RemoveAt(i);
+				}
+				toRemove.Add(GOE);
+				index.Add(i);
+				i++;
+			}
+		}
+		i=0;
+		foreach (GameObject GOE in toRemove)
+		{
+			Eval.Remove(GOE);
+			i++;
+		}
+	}
+	private void recalculateNodePositions()
+	{
+		List<Node> NodesToAdapt;
+		int i=0;
+		bool recalculate=false;
+		foreach(GameObject GOE in Dynamic)
+		{
+			List<Node> children = msScript.root.Getchildren();
+			NodesToAdapt = msScript.SearchTreeForNode(children,GOE);
+			foreach (Node node in NodesToAdapt)
+			{
+				int j=0;
+				foreach(Vector3 point in node.GetPoints())
+				{
+					Vector3 changes = GOE.transform.position - LastPosition[i];
+					Vector3 buffer  = point + changes;
+					node.Setpoint(buffer,j);
+					j++;
+				}
+			}
+			LastPosition[i] = GOE.transform.position;
+			i++;
+			if(GOE == msScript.currentNode.reference) recalculate = true;
+		}
+		if(recalculate)
+		{
+			if(msScript.pointnumber < msScript.currentNode.GetPoints().Count-1)
+			{
+				msScript.mTarget = msScript.currentNode.GetPoint(msScript.pointnumber);
+				msScript.timeout = (msScript.currentNode.GetDistance(msScript.pointnumber,transform.position)/msScript.speed)+0.5f;
+				msScript.timer = msScript.timeout;
+			}
+		}
+
+		
+
 	}
 
 

@@ -7,13 +7,13 @@ public class Movment_System : MonoBehaviour {
 	
 	public 	int 		speed       = 1;
 	public 	float 		accuracy    =0.5f;
-	public int 		pointnumber = 0;
-	public int			cornercount = 0; 
+	public  int 		pointnumber = 0;
+	public  int			cornercount = 0; 
 	private bool 		arrived=false;
 	public  bool 		backtracing = false;
 	public  Vector3 	mTarget;
-	private float timeout  = 0;
-	private float timer    = 0;
+	public  float timeout  = 0;
+	public  float timer    = 0;
 	public  float Interval = 0.5f;
 	private float timer2   = 0;
 	public 	GameObject 	target;
@@ -277,6 +277,25 @@ public class Movment_System : MonoBehaviour {
 			}
 		}
 		return subtarget;
+	}
+	public List<Node>SearchTreeForNode(List<Node> nodes,GameObject reference)
+	{
+		List<Node> subtargets = new List<Node>();
+		foreach(Node Child in nodes)
+		{
+			if (Node.hasChildren(Child))
+			{	
+				foreach(Node node in SearchTreeForNode(Child.Getchildren(),reference))
+				{
+					subtargets.Add(node);
+				}
+			}
+			if(Child.reference.name == reference.name)
+			{
+				subtargets.Add(Child);
+			}
+		}
+		return subtargets;
 	}
 	private bool newBranchAvailable()
 	{

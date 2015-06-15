@@ -55,6 +55,10 @@ public class Node
 //=========================================================================================
 // Set Methods ============================================================================
 //=========================================================================================
+	public void Setpoint(Vector3 point,int index)
+	{
+		Pointlist[index] = point;
+	}
 	public void Setpoint1(Vector3 point1)
 	{
 		Pointlist.Insert(0,point1);
@@ -119,7 +123,7 @@ public class Node
 	}
 	public Vector3 GetPoint (int index)
 	{
-		return Pointlist[index];
+252		return Pointlist[index];
 	}
 	public float GetDistance(int index,Vector3 position)
 	{
