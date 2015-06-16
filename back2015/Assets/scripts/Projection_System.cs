@@ -5,17 +5,23 @@ using System.Collections.Generic;
 
 public class Projection_System : MonoBehaviour
 {
-
+	public int iFramecount=0;
 	public int iStepsize = 1;
 	public int iLength = 10;
 	public int worldSizexhalf = 50;
 	public int worldSizezhalf = 50;
-	public Vector2 vRaycast_Grid = new Vector2 (4, 4); 
+	[HideInInspector]
+	public Vector2 vRaycast_Grid = new Vector2 (4,4); 
+	[HideInInspector]
 	public GameObject[] goVisibleGO;
 	private GameObject[,] goObjectsHit;
+	[HideInInspector]
 	public List<GameObject> CollisionObjects;
+	[HideInInspector]
 	public List<GameObject> Dynamic;
+	[HideInInspector]
 	public List<GameObject> Eval;
+	[HideInInspector]
 	public List<Vector3> 	LastPosition;
 	private float fSpacing = 1;
 	public LayerMask layers;
@@ -25,9 +31,13 @@ public class Projection_System : MonoBehaviour
 	private float iLastCalled = 0;
 	Movment_System msScript;
 	Stopwatch sw;
+	public Timestamp ts;
 	// Use this for initialization
 	void Start ()
 	{
+		sw = new Stopwatch();
+		ts = new Timestamp();
+
 		CollisionObjects = new List<GameObject>();
 		Dynamic = new List<GameObject>();
 		Eval = new List<GameObject>();
@@ -35,27 +45,35 @@ public class Projection_System : MonoBehaviour
 		goObjectsHit = new GameObject[5,4];
 		goVisibleGO = new GameObject[goObjectsHit.Length];
 		msScript = gameObject.GetComponent<Movment_System>();
-		sw = new Stopwatch();	
+
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
-		sw.Start();
-			getDynamicGameObjects();
-			recalculateNodePositions();
-			timer -= Time.deltaTime;
-			if (timer <= 0) {	
-
-
-					SendRaycastArray ();
-					getGameObjects ();
-					timer = iInterval;
-			}
-		sw.Stop();
-		long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
-		Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
-		sw.Reset();
+		if(iFramecount > 5)
+		{
+			sw.Start();
+				getDynamicGameObjects();
+				recalculateNodePositions();
+				iFramecount = 0;
+			sw.Stop();
+		}
+		timer -= Time.deltaTime;
+		if (timer <= 0) {	
+			sw.Start();
+				SendRaycastArray ();
+				getGameObjects ();
+				timer = iInterval;
+			sw.Stop();
+		}
+		if(sw.ElapsedTicks >0)
+		{
+			long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+			ts.saveData(microseconds);
+			sw.Reset();
+		}
+		iFramecount++;
 	}
 	void SendRaycastArray ()
 	{
@@ -66,7 +84,6 @@ public class Projection_System : MonoBehaviour
 				RaycastHit rhHit = new RaycastHit ();
 				Vector3 v3Offset = new Vector3 (x, y, 0);
 				Vector3 vRaycast = transform.forward*10 + transform.TransformVector (v3Offset);
-				UnityEngine.Debug.DrawRay(transform.position,vRaycast,Color.red,0.3f);
 				if (Physics.Raycast(transform.position, vRaycast, out rhHit,iLength,layers)) 
 				{
 					goObjectsHit [x + 2, y] = rhHit.transform.gameObject;
@@ -246,7 +263,6 @@ public class Projection_System : MonoBehaviour
 			}
 		}
 		RaycastHit rhHit2 = new RaycastHit ();
-		UnityEngine.Debug.DrawRay (transform.position, msScript.mTarget - transform.position, Color.red,0.3f);
 		Physics.Raycast (transform.position, msScript.mTarget - transform.position, out rhHit2,	Vector3.Distance(msScript.mTarget,transform.position));
 		bool kown = false;
 		foreach (GameObject Go in Buffer) 
@@ -266,7 +282,7 @@ public class Projection_System : MonoBehaviour
 
 					CollisionObjects.Add(Go);
 					Eval.Add(Go);
-					LastPosition.Add (Go.transform.position);
+					LastPosition.Add(Go.transform.position);
 					getNodes(Go);
 				}
 			}
@@ -327,22 +343,18 @@ public class Projection_System : MonoBehaviour
 	private void getDynamicGameObjects()
 	{
 		List<GameObject> toRemove = new List<GameObject>();
-		List<int> index = new List<int>();
 		int i=0;
 		if(Eval.Count > 0)
 		{
-
 			foreach(GameObject GOE in Eval)
 			{
-				if(GOE.transform.position != LastPosition[i])
-				{
+				if(GOE.transform.position != LastPosition[i]){
 					Dynamic.Add(GOE);
 				}
 				else{
 					LastPosition.RemoveAt(i);
 				}
 				toRemove.Add(GOE);
-				index.Add(i);
 				i++;
 			}
 		}
@@ -386,10 +398,11 @@ public class Projection_System : MonoBehaviour
 				msScript.timer = msScript.timeout;
 			}
 		}
-
-		
-
 	}
-
+	void OnDestroy() {
+		int i = gameObject.GetComponent<FPS>().iNumber;
+		ts.EmptyFile("Raycast_pathing"+i.ToString()+".csv");
+		ts.SavetoFile("Raycast_pathing"+i.ToString()+".csv");
+	}
 
 }

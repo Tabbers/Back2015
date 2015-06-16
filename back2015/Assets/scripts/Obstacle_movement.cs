@@ -10,9 +10,13 @@ public class Obstacle_movement : MonoBehaviour {
 	public float fSpeed = 1.0f;
 	private bool bDirection;
 	private int  iDirection = 1;
+	public  long Collisions = 0;
+
+	Timestamp ts;
 	// Use this for initialization
 	void Start () 
 	{
+		ts = new Timestamp();
 		v3Start = gameObject.transform.position;
 		v3End = gameObject.transform.position + v3Shift;
 	}
@@ -37,4 +41,14 @@ public class Obstacle_movement : MonoBehaviour {
 		fCount += Time.deltaTime * fSpeed * iDirection;
 		gameObject.transform.position = Vector3.Lerp(v3Start, v3End, fCount);
 	}
+	void OnCollisionEnter(Collision collision)
+	{
+		if(collision.collider.gameObject.tag =="Agent") Collisions++;	
+	}	
+	void OnApplicationQuit() {
+		ts.EmptyFile("collission_"+gameObject.name+".csv");
+		ts.saveData(Collisions);
+		ts.SavetoFile("collission_"+gameObject.name+".csv");
+	}
+
 }

@@ -39,7 +39,10 @@ using Pathfinding.RVO;
 public class AIPath : MonoBehaviour {
 
 	Stopwatch sw;
-
+	Stopwatch sw2;
+	public Timestamp ts;
+	public Timestamp ts2;
+	public Timestamp ts3;
 	/** Determines how often it will search for new paths. 
 	 * If you have fast moving targets or AIs, you might want to set it to a lower value.
 	 * The value is in seconds between path requests.
@@ -172,7 +175,12 @@ public class AIPath : MonoBehaviour {
 	 */
 	protected virtual void Start () {
 		startHasRun = true;
-		sw = new Stopwatch();
+		sw  = new Stopwatch();
+		sw2 = new Stopwatch();
+		ts  = new Timestamp();
+		ts2 = new Timestamp();
+		ts3 = new Timestamp();
+		sw2.Start();
 		OnEnable ();
 	}
 	
@@ -218,7 +226,7 @@ public class AIPath : MonoBehaviour {
 				yield return new WaitForSeconds (v);
 			sw.Stop();
 			long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
-			Timestamp.SavetoFile("AStar_Pathing.csv",microseconds);
+			ts.saveData(microseconds);
 			sw.Reset();
 		}
 	}
@@ -265,8 +273,26 @@ public class AIPath : MonoBehaviour {
 		//add it here
 		//You can also create a new script which inherits from this one
 		//and override the function in that script
+
+		GameObject.Destroy(gameObject);
 	}
-	
+	void OnDestroy() {
+		sw2.Stop();
+		int i = gameObject.GetComponent<FPS>().iNumber;
+
+		ts.EmptyFile("AStar_pathing"+i.ToString()+".csv");
+		ts.SavetoFile("AStar_pathing"+i.ToString()+".csv");
+
+		ts2.EmptyFile("AStar_moving"+i.ToString()+".csv");
+		ts2.SavetoFile("AStar_moving"+i.ToString()+".csv");
+
+		ts3.EmptyFile("AStar_all"+i.ToString()+".csv");
+		long milliseconds = sw2.ElapsedTicks / (Stopwatch.Frequency / (1000L));
+		ts3.saveData(milliseconds);
+		ts3.SavetoFile("AStar_all"+i.ToString()+".csv");
+
+
+	}
 	/** Called when a requested path has finished calculation.
 	  * A path is first requested by #SearchPath, it is then calculated, probably in the same or the next frame.
 	  * Finally it is returned to the seeker which forwards it to this function.\n
@@ -328,22 +354,26 @@ public class AIPath : MonoBehaviour {
 	}
 	
 	public virtual void Update () {
-		
-		if (!canMove) { return; }
-		
-		Vector3 dir = CalculateVelocity (GetFeetPosition());
+		sw.Start();
+			if (!canMove) { return; }
+			
+			Vector3 dir = CalculateVelocity (GetFeetPosition());
 
-		//Rotate towards targetDirection (filled in by CalculateVelocity)
-		RotateTowards (targetDirection);
-	
-		if (navController != null) {
-		} else if (controller != null) {
-			controller.SimpleMove (dir);
-		} else if (rigid != null) {
-			rigid.AddForce (dir);
-		} else {
-			transform.Translate (dir*Time.deltaTime, Space.World);
-		}
+			//Rotate towards targetDirection (filled in by CalculateVelocity)
+			RotateTowards (targetDirection);
+		
+			if (navController != null) {
+			} else if (controller != null) {
+				controller.SimpleMove (dir);
+			} else if (rigid != null) {
+				rigid.AddForce (dir);
+			} else {
+				transform.Translate (dir*Time.deltaTime, Space.World);
+			}
+		sw.Stop();
+		long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+		ts2.saveData(microseconds);
+		sw.Reset();
 	}
 	
 	/** Point to where the AI is heading.

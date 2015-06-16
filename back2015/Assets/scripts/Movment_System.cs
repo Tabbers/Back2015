@@ -7,26 +7,43 @@ public class Movment_System : MonoBehaviour {
 	
 	public 	int 		speed       = 1;
 	public 	float 		accuracy    =0.5f;
+	[HideInInspector]
 	public  int 		pointnumber = 0;
+	[HideInInspector]
 	public  int			cornercount = 0; 
 	private bool 		arrived=false;
+	[HideInInspector]
 	public  bool 		backtracing = false;
+	[HideInInspector]
 	public  Vector3 	mTarget;
+	[HideInInspector]
 	public  float timeout  = 0;
+	[HideInInspector]
 	public  float timer    = 0;
 	public  float Interval = 0.5f;
 	private float timer2   = 0;
 	public 	GameObject 	target;
+	[HideInInspector]
 	public 	Node 		root;
+	[HideInInspector]
 	public 	Node 		nTarget;
 	public 	Node 		currentNode;
+	[HideInInspector]
 	public  List<Node>  Pathtaken;
 	Projection_System   psScript;
 	// Use this for initialization
 	Stopwatch sw;
+	Stopwatch sw2;
+	public Timestamp ts;
+	public Timestamp ts2;
 	void Start () {
+		sw  = new Stopwatch();
+		sw2 = new Stopwatch();
+		sw2.Start();
+		ts  = new Timestamp();
+		ts2  = new Timestamp();
+
 		psScript = GetComponent<Projection_System>();
-		sw = new Stopwatch();
 		Pathtaken = new List<Node>();
 		root = new Node(GameObject.FindGameObjectWithTag("Start"),transform.position);
 		root.isroot = true;
@@ -50,7 +67,12 @@ public class Movment_System : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () 
 	{
-		MoveToNode();
+		sw.Start();
+			MoveToNode();
+		sw.Stop();
+		long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+		ts.saveData(microseconds);
+		sw.Reset();
 	}
 	public void NextNode ()
 	{
@@ -86,7 +108,6 @@ public class Movment_System : MonoBehaviour {
 			timer = timeout;
 			pointnumber = 0;
 		}
-		UnityEngine.Debug.Log("Next");
 	}
 	public void RefreshNode()
 	{
@@ -101,7 +122,6 @@ public class Movment_System : MonoBehaviour {
 		Node subtarget = SearchTree(root.Getchildren());
 		
 		RaycastHit rhHit = new RaycastHit ();
-		UnityEngine.Debug.DrawRay (transform.position, subtarget.Getpoint1() - transform.position, Color.red,0.3f);
 		if(Physics.Raycast (transform.position, subtarget.Getpoint1() - transform.position, out rhHit,	Vector3.Distance(subtarget.Getpoint1(),transform.position)))
 		{
 			bool reset = true;
@@ -133,9 +153,8 @@ public class Movment_System : MonoBehaviour {
 		if(currentNode.reference != nTarget.reference) Pathtaken.Add(currentNode);
 		mTarget = currentNode.Getpoint1();
 		pointnumber = 0;
-		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
 		timer = timeout;
-		UnityEngine.Debug.Log("Refresh");
 	}
 	public void MoveToNode()
 	{
@@ -147,7 +166,7 @@ public class Movment_System : MonoBehaviour {
 					pointnumber++;
 					if(pointnumber < currentNode.GetPoints().Count){ 
 						mTarget = currentNode.GetPoint(pointnumber);
-						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
 						timer = timeout;
 					}
 				}
@@ -157,6 +176,7 @@ public class Movment_System : MonoBehaviour {
 			}
 			else
 			{
+				if(currentNode == nTarget) GameObject.Destroy(gameObject);
 				if(currentNode.reference != nTarget.reference )currentNode.explored =true;
 				NextNode();
 			}
@@ -175,7 +195,7 @@ public class Movment_System : MonoBehaviour {
 						currentNode = currentNode.Getparent();
 						mTarget = currentNode.GetPoint(currentNode.GetPoints().Count-1);
 						pointnumber = currentNode.GetPoints().Count-1;
-						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
 						timer = timeout;
 						backtracing = true;
 					}
@@ -190,10 +210,6 @@ public class Movment_System : MonoBehaviour {
 						NextNode();
 					}
 				}
-				sw.Stop();
-				long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
-				Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
-				sw.Reset();
 			}
 		}
 		else{
@@ -202,7 +218,7 @@ public class Movment_System : MonoBehaviour {
 				if(arrivedAtWaypoint()){
 					pointnumber--;
 					mTarget = currentNode.GetPoint(pointnumber);
-					timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+					timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
 					timer = timeout;
 				}
 				else{
@@ -214,26 +230,10 @@ public class Movment_System : MonoBehaviour {
 				if(currentNode != root) currentNode = currentNode.Getparent();
 				pointnumber = currentNode.GetPoints().Count-1;
 				mTarget     = currentNode.GetPoint(currentNode.GetPoints().Count-1);
-				timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+0.3f;
+				timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
 				timer = timeout;
 			}
-			timer2 -= Time.deltaTime;
-			if(timer2<=0) 
-			{
-				sw.Start();
-				timer -= Time.deltaTime;
-				if(timer <= 0)
-				{
-					
-				}
-				sw.Stop();
-				long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
-				Timestamp.SavetoFile("Raycast_Pathing.csv",microseconds);
-				sw.Reset();
-			}
 		}
-		
-		
 	}
 	public void MoveToPoint()
 	{
@@ -312,4 +312,15 @@ public class Movment_System : MonoBehaviour {
 			Gizmos.DrawSphere(mTarget, 1);
 		}
 	}
+	void OnDestroy() {
+		int i = gameObject.GetComponent<FPS>().iNumber;
+		ts.EmptyFile("Raycasting_Moving"+i.ToString()+".csv");
+		ts.SavetoFile("Raycasting_Moving"+i.ToString()+".csv");
+
+		ts2.EmptyFile("Raycasting_all"+i.ToString()+".csv");
+		long milliseconds = sw2.ElapsedTicks / (Stopwatch.Frequency / (1000L));
+		ts2.saveData(milliseconds);
+		ts2.SavetoFile("Raycasting_all"+i.ToString()+".csv");
+	}
+
 }

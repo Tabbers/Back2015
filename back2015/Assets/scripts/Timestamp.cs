@@ -6,19 +6,33 @@ using System.Text;
 using System.Collections.Generic;
 
 public class Timestamp{
-	
-	public static void SavetoFile(string filePath,long time)
+
+	private string sData="";
+
+	public Timestamp()
 	{
-		if (!File.Exists(filePath))
+	}
+
+	public void EmptyFile(string filePath)
+	{
+		if (!File.Exists("Data/"+filePath))
 		{
-			File.Create(filePath);
+			File.WriteAllText("Data/"+filePath,string.Empty);
 		}
-		File.WriteAllText(filePath,string.Empty);
-		StringBuilder csv = new StringBuilder();
-		string first = time.ToString();
-		string newline =  string.Format("{0},{1}", first, Environment.NewLine);
-		csv.Append(newline);
-		File.AppendAllText(filePath, csv.ToString());
+	}
+	public void saveData(long time)
+	{
+		string first		= time.ToString();
+		string newline 		= string.Format("{0},{1}", first,Environment.NewLine);
+		sData += newline;
+	}
+	public void SavetoFile(string filePath)
+	{
+		if (!File.Exists("Data/"+filePath))
+		{
+			File.Create("Data/"+filePath);
+		}
+		File.AppendAllText("Data/"+filePath, sData);
 	}
 }
 	

@@ -123,7 +123,7 @@ public class Node
 	}
 	public Vector3 GetPoint (int index)
 	{
-252		return Pointlist[index];
+		return Pointlist[index];
 	}
 	public float GetDistance(int index,Vector3 position)
 	{

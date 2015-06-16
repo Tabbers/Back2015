@@ -1,19 +1,17 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Movment_System.cs">
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Timestamp.cs">
     <Files>
-      <File FileName="Assets\scripts\Movment_System.cs" Line="118" Column="5" />
-      <File FileName="Assets\scripts\Node.cs" Line="126" Column="4" />
-      <File FileName="Assets\scripts\Projection_System.cs" Line="376" Column="45" />
+      <File FileName="Assets\scripts\Projection_System.cs" Line="374" Column="37" />
+      <File FileName="Assets\scripts\Movment_System.cs" Line="302" Column="3" />
+      <File FileName="Assets\scripts\FPS.cs" Line="25" Column="63" />
+      <File FileName="Assets\scripts\AI_Spawn.cs" Line="7" Column="31" />
+      <File FileName="Assets\AstarPathfindingProject\Core\AI\AIPath.cs" Line="277" Column="46" />
+      <File FileName="Assets\scripts\Timestamp.cs" Line="26" Column="44" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches>
-    <Watch file="Assets\scripts\Movment_System.cs" line="104" offsetX="958" offsetY="1648" expression="currentNode" liveUpdate="False" />
-    <Watch file="Assets\scripts\Node.cs" line="177" offsetX="846" offsetY="2656" expression="node" liveUpdate="False" />
-    <Watch file="Assets\scripts\Movment_System.cs" line="131" offsetX="446" offsetY="2080" expression="subtarget" liveUpdate="False" />
-    <Watch file="Assets\scripts\Projection_System.cs" line="371" offsetX="422" offsetY="5792" expression="node" liveUpdate="False" />
-  </MonoDevelop.Ide.DebuggingService.PinnedWatches>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

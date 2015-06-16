@@ -12,7 +12,8 @@ public class AI_Spawn : MonoBehaviour {
 	private bool bSpawning = true;
 	public int iNumber;
 	private int iSpawnd=0;
-	public float InstantiationTimer = 1f;
+	public float SpawnInterval = 0;
+	private float InstantiationTimer = 1f;
 
 	// Use this for initialization
 	void Start () 
@@ -40,7 +41,8 @@ public class AI_Spawn : MonoBehaviour {
 				if (InstantiationTimer <= 0)
 				{
 					GameObject Agent = Instantiate(goSpawning,transform.position,transform.rotation) as GameObject;
-					InstantiationTimer = 2f;
+					InstantiationTimer = SpawnInterval+Random.Range(0,2);
+					Agent.GetComponent<FPS>().iNumber = iSpawnd;
 					iSpawnd ++;
 				}
 				if(iSpawnd == iNumber)bSpawning =false;
