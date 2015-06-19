@@ -1,13 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Projection_System.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\Timestamp.cs">
     <Files>
-      <File FileName="Assets\scripts\Obstacle_movement.cs" Line="46" Column="65" />
-      <File FileName="Assets\scripts\FPS.cs" Line="1" Column="1" />
-      <File FileName="Assets\scripts\Timestamp.cs" Line="38" Column="2" />
-      <File FileName="Assets\scripts\Projection_System.cs" Line="70" Column="25" />
-      <File FileName="Assets\AstarPathfindingProject\Core\AI\AIPath.cs" Line="183" Column="6" />
-      <File FileName="Assets\scripts\Movment_System.cs" Line="321" Column="26" />
+      <File FileName="Assets\scripts\Timestamp.cs" Line="1" Column="1" />
+      <File FileName="Assets\scripts\Obstacle_movement.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
