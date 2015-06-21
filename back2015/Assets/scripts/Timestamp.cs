@@ -7,10 +7,11 @@ using System.Collections.Generic;
 
 public class Timestamp{
 
-	private string sData="";
+	private List<long> Data;
 
 	public Timestamp()
 	{
+		Data = new List<long>();
 	}
 
 	public void EmptyFile(string filePath)
@@ -22,12 +23,23 @@ public class Timestamp{
 	}
 	public void saveData(long time)
 	{
-		string first		= time.ToString();
-		string newline 		= string.Format("{0},{1}", first,Environment.NewLine);
-		sData += newline;
+		Data.Add(time);
 	}
 	public void SavetoFile(string filePath)
 	{
+		long sum = 0;
+		string sData="";
+
+		foreach(long Datum in Data)
+		{
+			sum+= Datum;
+		}
+		UnityEngine.Debug.Log(sum);
+		float average = (float)sum/Data.Count;
+		UnityEngine.Debug.Log(average);
+		string first		= average.ToString();
+		string newline 		= string.Format("{0},{1}", first,Environment.NewLine);
+		sData += newline;
 		if (!File.Exists("Data/"+filePath))
 		{
 			File.Create("Data/"+filePath);

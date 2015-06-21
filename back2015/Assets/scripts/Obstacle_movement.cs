@@ -45,10 +45,4 @@ public class Obstacle_movement : MonoBehaviour {
 	{
 		if(collision.collider.gameObject.tag =="Agent") Collisions++;	
 	}	
-	void OnApplicationQuit() {
-		ts.EmptyFile("collission_"+gameObject.name+".csv");
-		ts.saveData(Collisions);
-		ts.SavetoFile("collission_"+gameObject.name+".csv");
-	}
-
 }

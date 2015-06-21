@@ -23,7 +23,7 @@ public class Projection_System : MonoBehaviour
 	public List<GameObject> Eval;
 	[HideInInspector]
 	public List<Vector3> 	LastPosition;
-	private float fSpacing = 1;
+	private float fSpacing = 1.5f;
 	public LayerMask layers;
 
 	public float iInterval = 0.5f;
@@ -45,13 +45,14 @@ public class Projection_System : MonoBehaviour
 		goObjectsHit = new GameObject[5,4];
 		goVisibleGO = new GameObject[goObjectsHit.Length];
 		msScript = gameObject.GetComponent<Movment_System>();
+		Physics.IgnoreLayerCollision(9,9);
 
 	}
 	
 	// Update is called once per frame
-	void FixedUpdate ()
+	void Update ()
 	{
-		if(iFramecount > 5)
+		if(iFramecount > 1)
 		{
 			sw.Start();
 				getDynamicGameObjects();
@@ -400,9 +401,8 @@ public class Projection_System : MonoBehaviour
 		}
 	}
 	void OnDestroy() {
-		int i = gameObject.GetComponent<FPS>().iNumber;
-		ts.EmptyFile("Raycast_pathing"+i.ToString()+".csv");
-		ts.SavetoFile("Raycast_pathing"+i.ToString()+".csv");
+		ts.EmptyFile("Raycast_pathing.csv");
+		ts.SavetoFile("Raycast_pathing.csv");
 	}
 
 }

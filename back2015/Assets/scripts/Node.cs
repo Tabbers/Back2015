@@ -154,7 +154,7 @@ public class Node
 	{
 		foreach(Vector3 point in points)
 		{
-			this.Pointlist.Add(point);
+			if(point != null) this.Pointlist.Add(point);
 		}
 	}
 
@@ -185,8 +185,8 @@ public class Node
 			foreach(GameObject GO in CollisionObjects)
 			{
 				Bounds b = GO.collider.bounds;
-				Vector3 RO = new Vector3(b.center.x + b.extents.x+0.3f,position.y,b.center.z + b.extents.z+0.3f);
-				Vector3 LU = new Vector3(b.center.x - b.extents.x-0.3f,position.y,b.center.z - b.extents.z-0.3f);
+				Vector3 RO = new Vector3(b.center.x + b.extents.x+0.8f,position.y,b.center.z + b.extents.z+0.8f);
+				Vector3 LU = new Vector3(b.center.x - b.extents.x-0.8f,position.y,b.center.z - b.extents.z-0.8f);
 				
 				if(point.x < RO.x && 
 				   point.x > LU.x &&

@@ -65,14 +65,9 @@ public class Movment_System : MonoBehaviour {
 		NextNode();
 	}
 	// Update is called once per frame
-	void FixedUpdate () 
+	void Update () 
 	{
-		sw.Start();
-			MoveToNode();
-		sw.Stop();
-		long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
-		ts.saveData(microseconds);
-		sw.Reset();
+		MoveToNode();
 	}
 	public void NextNode ()
 	{
@@ -136,7 +131,7 @@ public class Movment_System : MonoBehaviour {
 					reset = false;
 				}
 			}
-			if(!reset) sibling.AddPoints(Corners);
+			if(!reset && sibling != null && Corners.Count >0) sibling.AddPoints(Corners);
 			else cornercount = 0;
 		}
 		
@@ -153,11 +148,12 @@ public class Movment_System : MonoBehaviour {
 		if(currentNode.reference != nTarget.reference) Pathtaken.Add(currentNode);
 		mTarget = currentNode.Getpoint1();
 		pointnumber = 0;
-		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+		timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+10f;
 		timer = timeout;
 	}
 	public void MoveToNode()
 	{
+		sw.Start();
 		if(!backtracing)
 		{
 			if(pointnumber < currentNode.GetPoints().Count)
@@ -166,7 +162,7 @@ public class Movment_System : MonoBehaviour {
 					pointnumber++;
 					if(pointnumber < currentNode.GetPoints().Count){ 
 						mTarget = currentNode.GetPoint(pointnumber);
-						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+10f;
 						timer = timeout;
 					}
 				}
@@ -195,7 +191,7 @@ public class Movment_System : MonoBehaviour {
 						currentNode = currentNode.Getparent();
 						mTarget = currentNode.GetPoint(currentNode.GetPoints().Count-1);
 						pointnumber = currentNode.GetPoints().Count-1;
-						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+						timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+10f;
 						timer = timeout;
 						backtracing = true;
 					}
@@ -218,7 +214,7 @@ public class Movment_System : MonoBehaviour {
 				if(arrivedAtWaypoint()){
 					pointnumber--;
 					mTarget = currentNode.GetPoint(pointnumber);
-					timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+					timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+10f;
 					timer = timeout;
 				}
 				else{
@@ -230,9 +226,16 @@ public class Movment_System : MonoBehaviour {
 				if(currentNode != root) currentNode = currentNode.Getparent();
 				pointnumber = currentNode.GetPoints().Count-1;
 				mTarget     = currentNode.GetPoint(currentNode.GetPoints().Count-1);
-				timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+1f;
+				timeout = (currentNode.GetDistance(pointnumber,transform.position)/speed)+10f;
 				timer = timeout;
 			}
+		}
+		sw.Stop();
+		if(sw.ElapsedTicks >0)
+		{
+			long microseconds = sw.ElapsedTicks / (Stopwatch.Frequency / (1000L*1000L));
+			ts.saveData(microseconds);
+			sw.Reset();
 		}
 	}
 	public void MoveToPoint()
@@ -313,14 +316,15 @@ public class Movment_System : MonoBehaviour {
 		}
 	}
 	void OnDestroy() {
-		int i = gameObject.GetComponent<FPS>().iNumber;
-		ts.EmptyFile("Raycasting_Moving"+i.ToString()+".csv");
-		ts.SavetoFile("Raycasting_Moving"+i.ToString()+".csv");
+		ts.EmptyFile("Raycasting_Moving.csv");
+		ts.SavetoFile("Raycasting_Moving.csv");
 
-		ts2.EmptyFile("Raycasting_all"+i.ToString()+".csv");
+		ts2.EmptyFile("Raycasting_all.csv");
 		long milliseconds = sw2.ElapsedTicks / (Stopwatch.Frequency / (1000L));
 		ts2.saveData(milliseconds);
-		ts2.SavetoFile("Raycasting_all"+i.ToString()+".csv");
+		ts2.SavetoFile("Raycasting_all.csv");
+
+		GameObject.FindGameObjectWithTag("Start").GetComponent<AI_Spawn>().iSpawnd--;
 	}
 
 }

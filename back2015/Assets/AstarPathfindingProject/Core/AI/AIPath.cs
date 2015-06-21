@@ -278,19 +278,17 @@ public class AIPath : MonoBehaviour {
 	}
 	void OnDestroy() {
 		sw2.Stop();
-		int i = gameObject.GetComponent<FPS>().iNumber;
 
-		ts.EmptyFile("AStar_pathing"+i.ToString()+".csv");
-		ts.SavetoFile("AStar_pathing"+i.ToString()+".csv");
+		ts.EmptyFile("AStar_pathing.csv");
+		ts.SavetoFile("AStar_pathing.csv");
 
-		ts2.EmptyFile("AStar_moving"+i.ToString()+".csv");
-		ts2.SavetoFile("AStar_moving"+i.ToString()+".csv");
+		ts2.EmptyFile("AStar_moving.csv");
+		ts2.SavetoFile("AStar_moving.csv");
 
-		ts3.EmptyFile("AStar_all"+i.ToString()+".csv");
+		ts3.EmptyFile("AStar_all.csv");
 		long milliseconds = sw2.ElapsedTicks / (Stopwatch.Frequency / (1000L));
 		ts3.saveData(milliseconds);
-		ts3.SavetoFile("AStar_all"+i.ToString()+".csv");
-
+		ts3.SavetoFile("AStar_all.csv");
 
 	}
 	/** Called when a requested path has finished calculation.
